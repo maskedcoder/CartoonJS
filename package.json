@@ -1,0 +1,12 @@
+{
+  "name": "CartoonJS",
+  "title": "CartoonJS",
+  "version": "2.1",
+  "author": "Andrew Myers",
+  "description": "JavaScript library for creating HTML5 canvas animations",
+  "license": "MIT",
+  "keywords": [],
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {}
+}
