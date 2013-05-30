@@ -1,9 +1,25 @@
 (function (global) {
-	var LASTFRAME = 0,
-		DEBUG = false;
-	var init = function (a, b, c, d, e) {
-		return new animation(a, b, c, d, e);
+	var LASTFRAME = 0, // Tells the previous frame logged in case of debugging
+		DEBUG = false; // Whether or not to log the frames per second of the animation
+
+    /**
+     * Creates a new Animation
+     *
+     * @param element An element to contain the controls (optional)
+     *
+     * @return The new Animation
+     */
+	var init = function (element) {
+		return new animation(element);
 	};
+
+    /**
+     * Animation initializer
+     *
+     * @param element An element to contain the controls (optional)
+     *
+     * @return The new Animation
+     */
 	var animation = function (element) {
 		
 		this.time = 0;
@@ -19,9 +35,24 @@
 			this.createControls(element);
 		}
 	};
+
+    /**
+     * Creates the controls for the animation
+     *
+     * @param element An element to contain the controls
+     *
+     * @return New Controls object
+     */
 	animation.prototype.createControls = function (element) {
 		return new controls(this, element);
 	};
+    
+    /**
+     * Gets a given CartoonItem's transformation for a given time
+     *
+     * @param item CartoonItem
+     * @param time Number
+     */
 	animation.prototype.itemTransformForTime = function (item, time) {
 		var t = null,
 			attr = {},
@@ -40,6 +71,15 @@
 		}
 		return attr;
 	};
+    
+    /**
+     * Adds a key frame, wherein the item has a specific value for a specific value at the specific time
+     *
+     * @param item CartoonItem or name of a CartoonItem
+     * @param time Time during the animation
+     * @param attr Name of a CartoonItem attribute
+     * @param val The value for that attribute
+     */
 	animation.prototype.addKeyFrame = function (item, time, attr, val) {
 		// item -> object or name, time -> int, attr -> name of item attribute,
 		// val -> value for said attribute at said time
@@ -68,15 +108,32 @@
 			this.timeline[item][attr].keys.push(0);
 		}
 	};
+    
+    /**
+     * Adds a scene to the Animation. A scene is a canvas that will be hidden until its time comes
+     *
+     * @param scene Canvas object
+     * @param time The time for the scene to show up
+     */
 	animation.prototype.addScene = function (scene, time) {
 		this.scenes[time] = scene;
 		if (this.sceneChanges.indexOf(time) == -1) {
 			this.sceneChanges.push(time);
 		}
 	};
+
+    /**
+     * Sets the Animation's audio to the given audio
+     *
+     * @param audio An Audio element
+     */
 	animation.prototype.addAudio = function (audio) {
 		this.audio = audio;
 	};
+
+    /**
+     * Toggles the Animation between playing and pausing
+     */
 	animation.prototype.togglePlay = function () {
 		if (this.status == "ready") {
 			if (this.onstatus) {
@@ -97,6 +154,10 @@
 			this.resume();
 		}
 	};
+
+    /**
+     * Plays the Animation
+     */
 	animation.prototype.play = function () {
 		this.sceneChanges.sort(function (a, b) {return b - a;});
 		for (var time in this.scenes) {
@@ -111,6 +172,11 @@
 		}
 		this.stepAnimation();
 	};
+
+    /**
+     * Makes the Animation stop playing and sends it back to the start
+     * To just stop the animation, use Animation.pause()
+     */
 	animation.prototype.stop = function () {
 		if (this.status == "ready") {
 			this.sceneChanges.sort(function (a, b) {return b - a;});
@@ -136,12 +202,20 @@
 		}
 		this.stepAnimation(true);
 	};
+
+    /**
+     * Pauses the Animation
+     */
 	animation.prototype.pause = function () {
 		if (this.audio) {
 			this.audio.pause();
 		}
 		this.status = "paused";
 	};
+
+    /**
+     * Resumes the Animation
+     */
 	animation.prototype.resume = function () {
 		this.startTime = +new Date() - this.time;
 		this.status = "playing";
@@ -150,6 +224,12 @@
 		}
 		this.stepAnimation();
 	};
+
+    /**
+     * Sets the Animation to the given time, and draws the corresponding frame
+     *
+     * @param time The new time
+     */
 	animation.prototype.setTime = function (time) {
 		this.time = time;
 		this.startTime = +new Date() - time;
@@ -164,8 +244,12 @@
 		}
 		this.stepAnimation(true);
 	};
+
+    /**
+     * Sends the Animation backwards 15 seconds, or as far as it can
+     */
 	animation.prototype.back15 = function () {
-		this.time = (this.time > 1500) ? this.time - 1500 : 0;
+		this.time = (this.time > 15000) ? this.time - 15000 : 0;
 		if (this.audio) {
 			this.audio.currentTime = this.time/1000;
 		}
@@ -178,6 +262,13 @@
 		}
 		this.stepAnimation(true);
 	};
+
+    /**
+     * Draws the frame for the current time and schedules itself to be called again if the animation isn't finished
+     * If a value is given for update, the current time is recalculated, but the function will not ask to be called again
+     *
+     * @param update Bool
+     */
 	animation.prototype.stepAnimation = function(update) {
 		if (update) {
 			this.time = +new Date() - this.startTime;
@@ -237,6 +328,19 @@
 			this.status = "ready";
 		}
 	};
+
+    /**
+     * SubAnimation initializer
+     *
+     * @param object A CartoonItem
+     * @param type The attribute of the CartoonItem that will be changed
+     * @param attr1 The inital state of the CartoonItem's attribute
+     * @param attr2 The final state of the CartoonItem's attribute
+     * @param start The starting time for the change
+     * @param finish The ending time for the change
+     *
+     * @return The new SubAnimation
+     */
 	var subAnimation = function (object, type, attr1, attr2, start, finish) {
 		this.object = object;
 		this.startState = attr1;
@@ -257,17 +361,53 @@
 				this.update = standardAlter;
 		}
 	};
+
+    /**
+     * Checks if this SubAnimation should be playing
+     * Returns true if the time is between the start and finish
+     * of this SubAnimation
+     *
+     * @param time The time of the Animation
+     *
+     * @return Bool
+     */
 	subAnimation.prototype.isPlaying = function (time) {
 		return (time >= this.begin && time <= this.end);
 	};
+
+    /**
+     * Calculates the progress of the SubAnimation (based on the time of the global Animation),
+     * and transforms the object accordingly
+     *
+     * @param time The time of the global Animation
+     */
 	subAnimation.prototype.transformForTime = function (time) {
 		var prct = (time - this.begin)/(this.end - this.begin);
 		this.update(this.object, prct, this.type, this.startState, this.endState);
 	};
 	
+    /**
+     * Alters a CartoonItem's attribute, assuming it is just a number
+     *
+     * @param object The CartoonItem
+     * @param prct The percentage progress of the SubAnimation
+     * @param attr The attribute to modify
+     * @param start The start value
+     * @param end The end value
+     */
 	var standardAlter = function (object, prct, attr, start, end) {
 		object.attr(attr, (end - start)*prct + start);
 	};
+	
+    /**
+     * Alters a CartoonItem's attribute, assuming it is a path
+     *
+     * @param object The CartoonItem
+     * @param prct The percentage progress of the SubAnimation
+     * @param attr The attribute to modify
+     * @param start The start position
+     * @param end The end position
+     */
 	var alterPath = function (object, prct, attr, start, end) {
 		var pathIncr = 0,
 			numPathSegments = start.length,
@@ -293,12 +433,40 @@
 		}
 		object.attr(attr, newPath);
 	};
+	
+    /**
+     * Alters a CartoonItem's attribute, assuming it is a color
+     *
+     * @param object The CartoonItem
+     * @param prct The percentage progress of the SubAnimation
+     * @param attr The attribute to modify
+     * @param start The start color
+     * @param end The end color
+     */
 	var alterColor = function (object, prct, attr, startColor, endColor) {
 	};
+
 	
+    /**
+     * Creates a new AnimationScene
+     *
+     * @param scene The Canvas to control
+     * @param background The Background for the AnimationScene
+     *
+     * @return The new AnimationScene
+     */
 	var asinit = function (s, b) {
 		return new AnimationScene(s, b);
 	};
+
+    /**
+     * AnimationScene initializer
+     *
+     * @param scene The Canvas to control
+     * @param background The Background for the AnimationScene
+     *
+     * @return The new AnimationScene
+     */
 	var AnimationScene = function (scene, background) {
 		this.background = background;
 		this.scene = scene;
@@ -310,6 +478,10 @@
 		this.hidden = false;
 		this.MYLASTFRAME = -1;
 	};
+
+    /**
+     * Hides the AnimationScene
+     */
 	AnimationScene.prototype.hide = function () {
 		this.scene.canvas.style.display = "none";
 		if (this.background) {
@@ -317,6 +489,10 @@
 		}
 		this.hidden = true;
 	};
+
+    /**
+     * Shows the AnimationScene
+     */
 	AnimationScene.prototype.show = function () {
 		this.scene.canvas.style.removeProperty("display");
 		if (this.background) {
@@ -325,6 +501,13 @@
 		}
 		this.hidden = false;
 	};
+
+    /**
+     * Draws the next frame in the Animation
+     *
+     * @param time The current time
+     * @param update Whether we are jumping to a specific place
+     */
 	AnimationScene.prototype.stepAnimation = function (time, update) {
 		this.drawnYet = true;
 		var i = 0,
@@ -365,6 +548,15 @@
 		this.MYLASTFRAME = time;
 		this.scene.draw();
 	};
+
+    /**
+     * Adds a key frame the AnimationScene
+     *
+     * @param item CartoonItem or name of a CartoonItem
+     * @param time Time during the animation
+     * @param attr Name of a CartoonItem attribute
+     * @param val The value for that attribute
+     */
 	AnimationScene.prototype.addKeyFrame = function (item, time, attr, val) {
 		// item -> object or name, time -> int, attr -> name of item attribute,
 		// val -> value for said attribute at said time
@@ -393,6 +585,16 @@
 			this.timeline[item][attr].keys.push(0);
 		}
 	};
+
+    /**
+     * Schedules a non-animated attribute change for an object
+     * i.e., if the animation is at any point past this time, the value is such and such
+     *
+     * @param item CartoonItem or name of a CartoonItem
+     * @param time Time during the animation
+     * @param attr Name of a CartoonItem attribute
+     * @param val The value for that attribute
+     */
 	AnimationScene.prototype.addAttrChange = function (item, time, attr, val) {
 		/*
 		* For making instantaneous changes
@@ -413,6 +615,10 @@
 		}
 		this.immediateTimeline[time][item][attr] = val;
 	};
+
+    /**
+     * Prepares the AnimationScene for playing by reorganizing the timeline
+     */
 	AnimationScene.prototype.compile = function () {
 		this.MYLASTFRAME = -1;
 		this.drawnYet = false;
@@ -442,20 +648,45 @@
 			}
 		}
 	};
+
 	
+    /**
+     * Gets an element by id
+     *
+     * @param id The id to search for
+     *
+     * @return HTML Element
+     */
 	var $ = function (id) {
 		return document.getElementById(id);
 	};
 	
-	var timer = false;
+	var timer = false; // The timer (if there is one) for the controls to disappear once the mouse leaves the area
+
+    /**
+     * Hides the Animation Controls
+     */
 	var hideControls = function () {
 		$("animation-controls").style.display = "none";
 	};
+
+    /**
+     * Shows the Animation Controls
+     */
 	var showControls = function () {
 		$("animation-controls").style.removeProperty("display");
 	};
-	var dragging = false,
-		startX = 0;
+	var dragging = false, // Whether or not the user is dragging the playback meter
+		startX = 0; // The start of the drag, if the user is dragging
+
+    /**
+     * Generates the controls for the Animation, inside the element
+     *
+     * @param animation Animation that will be controlled
+     * @param element An HTML Element or its id, that the controls will be placed in
+     *
+     * @return new Controls object
+     */
 	var controls = function (animation, element) {
 		this.animation = animation;
 		if (typeof(element) == "string") {
@@ -556,6 +787,13 @@
 		animation.onstep = this.step;
 		animation.onstatus = this.state;
 	};
+
+    /**
+     * Updates the playback meter
+     *
+     * @param time The time of the animation
+     * @param total The length of the animation
+     */
 	controls.prototype.step = function (time, total) {
 		var prct = time/total;
 		var time = time/1000;
@@ -567,6 +805,12 @@
 			$("animation-marker").style.left = (prct*375 - 3) + "px";
 		}
 	};
+
+    /**
+     * Sets the the play toggle button to reflect the state of the animation
+     *
+     * @param state The new state for the play toggle button, either "play" or "pause"
+     */
 	controls.prototype.state = function (state) {
 		$("animation-toggle").className = "animation-control "+state;
 	};

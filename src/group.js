@@ -1,7 +1,24 @@
 (function (global) {
+    // Tally of groups for generating id's
 	var groups = 0;
+
+    /**
+     * Creates a new Group
+     *
+     * @param scene The Scene the Group will belong to
+     *
+     * @return The new Group object
+     */
 	var init = function () {
 	};
+
+    /**
+     * Group initializer
+     *
+     * @param scene The Scene the Group will belong to
+     *
+     * @return The new Group object
+     */
 	var group_object = function (scene) {
 		this.scene = scene;
 		this.objects = [];
@@ -12,6 +29,10 @@
 		this.name = name || "group_"+groups;
 		groups++;
 	};
+    
+    /**
+     * Draws all the CartoonObjects in the Group
+     */
 	group_object.prototype.draw = function (scene) {
 		var i = 0,
 			length = this.objects.length;
@@ -19,9 +40,25 @@
 			this.objects[i].draw(scene || this.scene);
 		}
 	};
+
+    /**
+     * Adds a CartoonItem to the group
+     *
+     * @param item A CartoonItem
+     */
 	group_object.prototype.addItem = function (item) {
 		this.objects.push(item);
 	};
+
+    /**
+    * Sets one or more Group attributes
+    * If a name is given but no value, the value of the attribute is returned
+    *
+    * @param name Name of a Group attribute or an object describing several attributes
+    * @param value The new value for the attribute (optional)
+    *
+    * @return Bool success
+    */
 	group_object.prototype.attr = function (name, value) {
 		if (typeof(name) == "object") {
 			var success = true,

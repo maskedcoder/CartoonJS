@@ -1,11 +1,44 @@
 (function (global) {
+    // Tally of canvases for generating id's
 	var canvases = 0;
-	var init = function (a,b,c) {
-		return new canvas(a,b,c);
+
+    /**
+     * Creates a new Canvas
+     *
+     * @param element The parent element for the new canvas
+     * @param width The canvas width
+     * @param height The canvas height
+     *
+     * @return Canvas object
+     */
+	var init = function (element, width, height) {
+		return new canvas(element, width, height);
 	};
-	var background_init = function (a, b, c) {
-		return new background(a,b,c);
+
+    /**
+     * Creates a new Background canvas
+     *
+     * @param element The parent element for the new canvas
+     * @param width The canvas width
+     * @param height The canvas height
+     *
+     * @return Background object
+     */
+	var background_init = function (element, width, height) {
+		return new background(element, width, height);
 	};
+
+
+    /**
+     * Canvas initializer.
+     * ([element || id], width, height)
+     * 
+     * @param el The parent element for the new canvas
+     * @param width The canvas width
+     * @param height The canvas height
+     *
+     * @return Canvas object
+     */
 	var canvas = function (el, width, height) {
 		var elType = typeof(el),
 			w = 500,
@@ -54,6 +87,10 @@
 		canvas = null;
 		el = null;
 	};
+
+    /**
+     * Clears the canvas and draws all of the child CartoonItems
+     */
 	canvas.prototype.draw = function () {
 		ctext = this.ctext;
 		ctext.clearRect(0,0,this.width,this.height);
@@ -65,18 +102,47 @@
 			}
 		}
 	};
+
+    /**
+     * Adds the CartoonItem to the canvas. The CartoonItem will not be called until Canvas.draw() is called
+     *
+     * @param item CartoonItem object
+     */
 	canvas.prototype.addItem = function (item) {
 		this.items[item.name] = item;
 	};
+
+    /**
+     * Removes the CartoonItem with the given name from the canvas. The change will not be shown until Canvas.draw() is called
+     *
+     * @param name The name of the CartoonItem object to remove
+     */
 	canvas.prototype.removeItem = function (name) {
 		var obj = this.items[name];
 		this.items[name] = undefined;
 		delete obj;
 	};
+
+    /**
+     * Fetches the CartoonItem with the given name from the canvas's list of CartoonItems
+     *
+     * @param name The name of the CartoonItem object
+     */
 	canvas.prototype.getItem = function (name) {
 		return this.items[name];
 	};
+
 	
+    /**
+     * Background initializer.
+     * ([element || id], width, height)
+     * 
+     * @param el The parent element for the new canvas
+     * @param width The canvas width
+     * @param height The canvas height
+     *
+     * @return Background object
+     */
 	var background = function (el, width, height) {
 		var elType = typeof(el),
 			w = 500,
@@ -119,6 +185,10 @@
 		canvas = null;
 		el = null;
 	};
+
+    /**
+     * Draws the Background
+     */
 	background.prototype.draw = function () {
 		console.log("Not implemented");
 	};
