@@ -3,23 +3,23 @@
     var objects = 0;
 
     /**
-    * Creates a new CartoonItem
-    *
-    * @param name The name for the new CartoonItem (optional)
-    *
-    * @return CartoonItem object
-    */
-    var init = function (name) {
+     * Creates a new CartoonItem
+     *
+     * @param name The name for the new CartoonItem (optional)
+     *
+     * @return CartoonItem object
+     */
+    /*var init = function (name) {
         return new item(name);
-    };
+    };*/
 
     /**
-    * CartoonItem initializer
-    *
-    * @param name The name for the new CartoonItem (optional)
-    *
-    * @return new CartoonItem object
-    */
+     * CartoonItem initializer
+     *
+     * @param name The name for the new CartoonItem (optional)
+     *
+     * @return new CartoonItem object
+     */
     var item = function (name) {
         this.path = [];
         this.attrs = {
@@ -60,12 +60,12 @@
     }
 
     /**
-    * Sets the CartoonItem's parent to the given CartoonItem
-    *
-    * @param p CartoonItem to be parent
-    *
-    * @return Bool success
-    */
+     * Sets the CartoonItem's parent to the given CartoonItem
+     *
+     * @param p CartoonItem to be parent
+     *
+     * @return Bool success
+     */
     item.prototype.setParent = function (p) {
         if (!(p instanceof item) && (p !== null)) {
             return false;
@@ -75,12 +75,12 @@
     };
 
     /**
-    * Adds a Matrix to the CartoonItem's list of Matrices. Each Matrix can be used to manipulate a number of vertices
-    *
-    * @param bone Matrix object
-    *
-    * @return This CartoonItem
-    */
+     * Adds a Matrix to the CartoonItem's list of Matrices. Each Matrix can be used to manipulate a number of vertices
+     *
+     * @param bone Matrix object
+     *
+     * @return This CartoonItem
+     */
     item.prototype.addBone = function (bone) {
         var name = bone.name;
         if (this.bones[name] === undefined) {
@@ -91,13 +91,13 @@
     };
 
     /**
-    * Sets the vertices that a given Matrix may manipulate
-    *
-    * @param bonename A Matrix object or name of a Matrix object in this CartoonItem's list of bones
-    * @param segmentlist A list of vertices
-    *
-    * @return This CartoonItem or false if there was an error
-    */
+     * Sets the vertices that a given Matrix may manipulate
+     *
+     * @param bonename A Matrix object or name of a Matrix object in this CartoonItem's list of bones
+     * @param segmentlist A list of vertices
+     *
+     * @return This CartoonItem or false if there was an error
+     */
     item.prototype.setBoneSegments = function (bonename, segmentlist) {
         if (typeof (bonename) != "string") {
             bonename = bonename.name;
@@ -110,13 +110,13 @@
     };
 
     /**
-    * Sets the given Matrix to automatically adopt all future vertices until CartoonItem.endBone() is called.
-    * If the Matrix object given is not in this CartoonItem's list of bones, it will be added
-    *
-    * @param bone A Matrix object
-    *
-    * @return This CartoonItem
-    */
+     * Sets the given Matrix to automatically adopt all future vertices until CartoonItem.endBone() is called.
+     * If the Matrix object given is not in this CartoonItem's list of bones, it will be added
+     *
+     * @param bone A Matrix object
+     *
+     * @return This CartoonItem
+     */
     item.prototype.beginBone = function (bone) {
         var name = bone.name;
         if (this.bones[name] === undefined) {
@@ -128,18 +128,18 @@
     };
 
     /**
-    * Tells the CartoonItem to stop giving the current Matrix power over new vertices
-    *
-    * @return This CartoonItem
-    */
+     * Tells the CartoonItem to stop giving the current Matrix power over new vertices
+     *
+     * @return This CartoonItem
+     */
     item.prototype.endBone = function () {
         this.buildingBone = false;
         return this;
     };
 
     /**
-    * Draws the CartoonItem
-    */
+     * Draws the CartoonItem
+     */
     item.prototype.draw = function (scene) {
         for (var name in this.attrs) {
             scene[name] = this.attrs[name];
@@ -215,8 +215,8 @@
     };
 
     /**
-    * Transforms the parent Canvas's Context2d into the CartoonItem's local Matrix
-    */
+     * Transforms the parent Canvas's Context2d into the CartoonItem's local Matrix
+     */
     item.prototype.getGlobal = function () {
         var matrices = [],
 			currentMatrix = this;
@@ -246,10 +246,10 @@
     };
 
     /**
-    * Recalculates the path into global coordinates
-    *
-    * @return List of vertices in global coordinates
-    */
+     * Recalculates the path into global coordinates
+     *
+     * @return List of vertices in global coordinates
+     */
     item.prototype.getGlobalPath = function () {
         // getGlobal only transforms the scene context
         // getGlobalPath transforms (a copy of) the path itself.
@@ -352,38 +352,38 @@
     };
 
     /**
-    * Gets the CartoonItem's list of vertices
-    *
-    * @return List of vertices
-    */
+     * Gets the CartoonItem's list of vertices
+     *
+     * @return List of vertices
+     */
     item.prototype.getPath = function () {
         return this.path;
     };
 
     /**
-    * Sets the CartoonItem's list of vertices to the given list
-    *
-    * @param path New list of vertices
-    *
-    * @return This CartoonItem
-    */
+     * Sets the CartoonItem's list of vertices to the given list
+     *
+     * @param path New list of vertices
+     *
+     * @return This CartoonItem
+     */
     item.prototype.setPath = function (path) {
         this.path = path;
         return this;
     };
 
     /**
-    * Adds three vertices describing a bezier curve to the CartoonItem's list of vertices
-    *
-    * @param x The destination x coordinate
-    * @param y The destination y coordinate
-    * @param cx1 The x coordinate of the first control point
-    * @param cy1 The y coordinate of the first control point
-    * @param cx2 The x coordinate of the second control point
-    * @param cy2 The y coordinate of the second control point
-    *
-    * @return This CartoonItem
-    */
+     * Adds three vertices describing a bezier curve to the CartoonItem's list of vertices
+     *
+     * @param x The destination x coordinate
+     * @param y The destination y coordinate
+     * @param cx1 The x coordinate of the first control point
+     * @param cy1 The y coordinate of the first control point
+     * @param cx2 The x coordinate of the second control point
+     * @param cy2 The y coordinate of the second control point
+     *
+     * @return This CartoonItem
+     */
     item.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
         this.path.push({ "type": "bezierCurve", "x": x, "y": y });
         this.path.push({ "type": "control1", "x": cx1, "y": cy1 });
@@ -396,15 +396,15 @@
     };
 
     /**
-    * Adds two vertices describing a quadratic curve to the CartoonItem's list of vertices
-    *
-    * @param x The destination x coordinate
-    * @param y The destination y coordinate
-    * @param cx The x coordinate of the control point
-    * @param cy The y coordinate of the control point
-    *
-    * @return This CartoonItem
-    */
+     * Adds two vertices describing a quadratic curve to the CartoonItem's list of vertices
+     *
+     * @param x The destination x coordinate
+     * @param y The destination y coordinate
+     * @param cx The x coordinate of the control point
+     * @param cy The y coordinate of the control point
+     *
+     * @return This CartoonItem
+     */
     item.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
         this.path.push({ "type": "quadraticCurve", "x": x, "y": y });
         var nLength = this.path.push({ "type": "control1", "x": cpx, "y": cpy });
@@ -416,16 +416,16 @@
     };
 
     /**
-    * Adds two vertices describing an arc curve to the CartoonItem's list of vertices
-    *
-    * @param x The destination x coordinate
-    * @param y The destination y coordinate
-    * @param x2 The x coordinate of a point on the arc
-    * @param y2 The y coordinate of a point on the arc
-    * @param radius The radius of the arc
-    *
-    * @return This CartoonItem
-    */
+     * Adds two vertices describing an arc curve to the CartoonItem's list of vertices
+     *
+     * @param x The destination x coordinate
+     * @param y The destination y coordinate
+     * @param x2 The x coordinate of a point on the arc
+     * @param y2 The y coordinate of a point on the arc
+     * @param radius The radius of the arc
+     *
+     * @return This CartoonItem
+     */
     item.prototype.arcTo = function (x, y, x2, y2, radius) {
         this.path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
         var nLength = this.path.push({ "type": "control1", "x": x2, "y": y2 });
@@ -437,13 +437,13 @@
     };
 
     /**
-    * Adds a vertex describing a line to the CartoonItem's list of vertices
-    *
-    * @param x The destination x coordinate
-    * @param y The destination y coordinate
-    *
-    * @return This CartoonItem
-    */
+     * Adds a vertex describing a line to the CartoonItem's list of vertices
+     *
+     * @param x The destination x coordinate
+     * @param y The destination y coordinate
+     *
+     * @return This CartoonItem
+     */
     item.prototype.lineTo = function (x, y) {
         var nLength = this.path.push({ "type": "line", "x": x, "y": y });
         if (this.buildingBone) {
@@ -454,13 +454,13 @@
     };
 
     /**
-    * Adds a vertex describing a jump to a new point to the CartoonItem's list of vertices
-    *
-    * @param x The destination x coordinate
-    * @param y The destination y coordinate
-    *
-    * @return This CartoonItem
-    */
+     * Adds a vertex describing a jump to a new point to the CartoonItem's list of vertices
+     *
+     * @param x The destination x coordinate
+     * @param y The destination y coordinate
+     *
+     * @return This CartoonItem
+     */
     item.prototype.moveTo = function (x, y) {
         var nLength = this.path.push({ "type": "move", "x": x, "y": y });
         if (this.buildingBone) {
@@ -471,10 +471,10 @@
     };
 
     /**
-    * Ends the construction of the current path
-    *
-    * @return This CartoonItem
-    */
+     * Ends the construction of the current path
+     *
+     * @return This CartoonItem
+     */
     item.prototype.endPath = function () {
         this.currentPath++;
         this.pathAttrs[this.currentPath] = {};
@@ -483,50 +483,50 @@
     };
 
     /**
-    * Sets the fill for the current path
-    *
-    * @param value The new fill style
-    *
-    * @return This CartoonItem
-    */
+     * Sets the fill for the current path
+     *
+     * @param value The new fill style
+     *
+     * @return This CartoonItem
+     */
     item.prototype.fillFor = function (value) {
         this.pathAttrs[this.currentPath]["fillStyle"] = value;
         return this;
     };
 
     /**
-    * Sets the stroke of the current path
-    *
-    * @param value The new stroke style
-    *
-    * @return This CartoonItem
-    */
+     * Sets the stroke of the current path
+     *
+     * @param value The new stroke style
+     *
+     * @return This CartoonItem
+     */
     item.prototype.strokeFor = function (value) {
         this.pathAttrs[this.currentPath]["strokeStyle"] = value;
         return this;
     };
 
     /**
-    * Sets the line width of the current path
-    *
-    * @param value The new line width
-    *
-    * @return This CartoonItem
-    */
+     * Sets the line width of the current path
+     *
+     * @param value The new line width
+     *
+     * @return This CartoonItem
+     */
     item.prototype.lineWidthFor = function (value) {
         this.pathAttrs[this.currentPath]["lineWidth"] = value;
         return this;
     };
 
     /**
-    * Sets one or more CartoonItem attributes
-    * If a name is given but no value, the value of the attribute is returned
-    *
-    * @param name Name of an CartoonItem attribute or an object describing several attributes
-    * @param value The new value for the attribute (optional)
-    *
-    * @return Bool success
-    */
+     * Sets one or more CartoonItem attributes
+     * If a name is given but no value, the value of the attribute is returned
+     *
+     * @param name Name of an CartoonItem attribute or an object describing several attributes
+     * @param value The new value for the attribute (optional)
+     *
+     * @return Bool success
+     */
     item.prototype.attr = function (name, value) {
         if (typeof (name) == "object") {
             var success = true;
@@ -559,7 +559,7 @@
         }
         return true;
     };
-    global.CartoonItem = init;
+    global.CartoonItem = item;
 
     // Matrix
 
@@ -567,23 +567,23 @@
     var matrices = 0;
 
     /**
-    * Creates a new Matrix with the given name
-    *
-    * @param name Name for the new Matrix (optional)
-    *
-    * @return The new Matrix object
-    */
-    var matrix_init = function (name) {
+     * Creates a new Matrix with the given name
+     *
+     * @param name Name for the new Matrix (optional)
+     *
+     * @return The new Matrix object
+     */
+    /*var matrix_init = function (name) {
         return new matrix(name);
-    };
+    };*/
 
     /**
-    * Matrix initializer
-    *
-    * @param name Name for the new Matrix (optional)
-    *
-    * @return The new Matrix object
-    */
+     * Matrix initializer
+     *
+     * @param name Name for the new Matrix (optional)
+     *
+     * @return The new Matrix object
+     */
     var matrix = function (name) {
         this.originX = 0;
         this.originY = 0;
@@ -597,12 +597,12 @@
     };
 
     /**
-    * Gives another Matrix the ability to manipulate this one
-    *
-    * @param other The other Matrix
-    *
-    * @return Bool success
-    */
+     * Gives another Matrix the ability to manipulate this one
+     *
+     * @param other The other Matrix
+     *
+     * @return Bool success
+     */
     matrix.prototype.setMatrix = function (other) {
         if (other == this || (!(other instanceof matrix) && (other !== null))) {
             return false;
@@ -612,21 +612,21 @@
     };
 
     /**
-    * Pretends to draw the Matrix
-    */
+     * Pretends to draw the Matrix
+     */
     matrix.prototype.draw = function () {
         return;
     };
 
     /**
-    * Sets one or more Matrix attributes
-    * If a name is given but no value, the value of the attribute is returned
-    *
-    * @param name Name of a Matrix attribute or an object describing several attributes
-    * @param value The new value for the attribute (optional)
-    *
-    * @return Bool success
-    */
+     * Sets one or more Matrix attributes
+     * If a name is given but no value, the value of the attribute is returned
+     *
+     * @param name Name of a Matrix attribute or an object describing several attributes
+     * @param value The new value for the attribute (optional)
+     *
+     * @return Bool success
+     */
     matrix.prototype.attr = function (name, value) {
         if (typeof (name) == "object") {
             var success = true,
@@ -650,5 +650,5 @@
         }
         return true;
     };
-    global.Matrix = matrix_init;
+    global.Matrix = matrix;
 })(this);

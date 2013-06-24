@@ -9,9 +9,9 @@
      *
      * @return The new Animation
      */
-	var init = function (element) {
+	/*var init = function (element) {
 		return new animation(element);
-	};
+	};*/
 
     /**
      * Animation initializer
@@ -331,6 +331,8 @@
 
     /**
      * SubAnimation initializer
+     * SubAnimations animate exactly one attribute change for one item
+     * Every Animation gets compiled to a large list of SubAnimations
      *
      * @param object A CartoonItem
      * @param type The attribute of the CartoonItem that will be changed
@@ -455,9 +457,9 @@
      *
      * @return The new AnimationScene
      */
-	var asinit = function (s, b) {
+	/*var asinit = function (s, b) {
 		return new AnimationScene(s, b);
-	};
+	};*/
 
     /**
      * AnimationScene initializer
@@ -809,13 +811,13 @@
     /**
      * Sets the the play toggle button to reflect the state of the animation
      *
-     * @param state The new state for the play toggle button, either "play" or "pause"
+     * @param state The new state for the play toggle button, either "play", "ready", or "pause"
      */
 	controls.prototype.state = function (state) {
 		$("animation-toggle").className = "animation-control "+state;
 	};
 	
-	global.AnimationScene = asinit;
+	global.AnimationScene = AnimationScene;
 	
-	global.CartoonAnimation = init;
+	global.CartoonAnimation = animation;
 })(this);

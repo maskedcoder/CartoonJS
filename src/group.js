@@ -9,8 +9,8 @@
      *
      * @return The new Group object
      */
-	var init = function () {
-	};
+	/*var init = function () {
+	};*/
 
     /**
      * Group initializer

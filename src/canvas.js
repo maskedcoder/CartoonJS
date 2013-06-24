@@ -3,17 +3,17 @@
 	var canvases = 0;
 
     /**
-     * Creates a new Canvas
+     * Creates a new CartoonCanvas
      *
      * @param element The parent element for the new canvas
      * @param width The canvas width
      * @param height The canvas height
      *
-     * @return Canvas object
+     * @return CartoonCanvas object
      */
-	var init = function (element, width, height) {
+	/* init = function (element, width, height) {
 		return new canvas(element, width, height);
-	};
+	};*/
 
     /**
      * Creates a new Background canvas
@@ -24,20 +24,20 @@
      *
      * @return Background object
      */
-	var background_init = function (element, width, height) {
+	/*var background_init = function (element, width, height) {
 		return new background(element, width, height);
-	};
+	};*/
 
 
     /**
-     * Canvas initializer.
+     * CartoonCanvas initializer.
      * ([element || id], width, height)
      * 
      * @param el The parent element for the new canvas
      * @param width The canvas width
      * @param height The canvas height
      *
-     * @return Canvas object
+     * @return CartoonCanvas object
      */
 	var canvas = function (el, width, height) {
 		var elType = typeof(el),
@@ -89,7 +89,7 @@
 	};
 
     /**
-     * Clears the canvas and draws all of the child CartoonItems
+     * Clears the CartoonCanvas and draws all of the child CartoonItems
      */
 	canvas.prototype.draw = function () {
 		ctext = this.ctext;
@@ -104,7 +104,7 @@
 	};
 
     /**
-     * Adds the CartoonItem to the canvas. The CartoonItem will not be called until Canvas.draw() is called
+     * Adds the CartoonItem to the CartoonCanvas. The CartoonItem will not be called until CartoonCanvas.draw() is called
      *
      * @param item CartoonItem object
      */
@@ -113,7 +113,7 @@
 	};
 
     /**
-     * Removes the CartoonItem with the given name from the canvas. The change will not be shown until Canvas.draw() is called
+     * Removes the CartoonItem with the given name from the CartoonCanvas. The change will not be shown until CartoonCanvas.draw() is called
      *
      * @param name The name of the CartoonItem object to remove
      */
@@ -124,7 +124,7 @@
 	};
 
     /**
-     * Fetches the CartoonItem with the given name from the canvas's list of CartoonItems
+     * Fetches the CartoonItem with the given name from the CartoonCanvas's list of CartoonItems
      *
      * @param name The name of the CartoonItem object
      */
@@ -193,6 +193,6 @@
 		console.log("Not implemented");
 	};
 	
-	global.Cartoony = init;
-	global.Background = background_init;
+	global.CartoonCanvas = canvas;
+	global.Background = background;
 })(this);
