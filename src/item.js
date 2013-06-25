@@ -38,7 +38,7 @@
             textAlign: "start",
             textBaseLine: "alphabetic"
         };
-        this.rotation = 0
+        this.rotation = 0;
         this.originX = 0;
         this.originY = 0;
         this.reverse = false;
@@ -56,7 +56,7 @@
         this.currentPath = 0;
         this.pathAttrs = { "0": {} };
         objects++;
-    }
+    };
 
     /**
      * Sets the CartoonItem's parent to the given CartoonItem
@@ -144,20 +144,20 @@
             scene[name] = this.attrs[name];
         }
         var path = this.getGlobalPath(),
-			paths = this.paths,
-			j = 0,
-			jlength = paths.length,
-			currentPoint = null,
-			control1 = null,
-			control2 = null,
-			pathAttrs = this.pathAttrs;
+            paths = this.paths,
+            j = 0,
+            jlength = paths.length,
+            currentPoint = null,
+            control1 = null,
+            control2 = null,
+            pathAttrs = this.pathAttrs;
         var pth, inc, length, i;
         for (; j < jlength; j++) {
             pth = paths[j];
             inc = 0;
             length = pth.length;
 
-            for (var name in pathAttrs[j]) {
+            for (name in pathAttrs[j]) {
                 scene[name] = pathAttrs[j][name];
             }
 
@@ -168,40 +168,40 @@
                 switch (currentPoint.type) {
                     case "line":
                         scene.lineTo(currentPoint.x,
-							currentPoint.y);
+                            currentPoint.y);
                         break;
                     case "bezierCurve":
                         control1 = path[i + 1];
                         control2 = path[i + 2];
                         inc += 2;
                         scene.bezierCurveTo(control1.x,
-							control1.y,
-							control2.x,
-							control2.y,
-							currentPoint.x,
-							currentPoint.y);
+                            control1.y,
+                            control2.x,
+                            control2.y,
+                            currentPoint.x,
+                            currentPoint.y);
                         break;
                     case "quadraticCurve":
                         control1 = path[i + 1];
                         inc++;
                         scene.quadraticCurveTo(control1.x,
-							control1.y,
-							currentPoint.x,
-							currentPoint.y);
+                            control1.y,
+                            currentPoint.x,
+                            currentPoint.y);
                         break;
                     case "arc":
                         control1 = path[i + 1];
                         inc++;
                         scene.arcTo(currentPoint.x,
-							currentPoint.y,
-							control1.x,
-							control1.y,
-							currentPoint.radius);
+                            currentPoint.y,
+                            control1.x,
+                            control1.y,
+                            currentPoint.radius);
                         break;
-                    case "move":
+                    //case "move":
                     default:
                         scene.moveTo(currentPoint.x,
-							currentPoint.y);
+                            currentPoint.y);
                         break;
                 }
             }
@@ -218,7 +218,7 @@
      */
     item.prototype.getGlobal = function () {
         var matrices = [],
-			currentMatrix = this;
+            currentMatrix = this;
         var originx, originy, scale, cx, cy, rotation, sign;
         var pi = Math.PI;
 
@@ -253,24 +253,24 @@
         // getGlobal only transforms the scene context
         // getGlobalPath transforms (a copy of) the path itself.
         var path = [].concat(this.getPath()),
-			i = 0,
-			length = path.length,
-			radius = 0,
-			magnitude = 0,
-			angle = 0,
-			point = null,
-			x = 0,
-			y = 0,
-			newPoint = null,
-			gPath = [],
-			matrices = [],
-			currentMatrix = this;
+            i = 0,
+            length = path.length,
+            radius = 0,
+            magnitude = 0,
+            angle = 0,
+            point = null,
+            x = 0,
+            y = 0,
+            newPoint = null,
+            gPath = [],
+            matrices = [],
+            currentMatrix = this;
         var originx, originy, scale, cx, cy, rotation, mirror;
         var pi = Math.PI,
-			atan2 = Math.atan2,
-			sqrt = Math.sqrt,
-			cos = Math.cos,
-			sin = Math.sin;
+            atan2 = Math.atan2,
+            sqrt = Math.sqrt,
+            cos = Math.cos,
+            sin = Math.sin;
 
         while (currentMatrix) {
             matrices.push(currentMatrix);
@@ -279,15 +279,15 @@
 
         for (var name in this.bones) {
             var bones = [],
-				currentBone = this.boneMatrices[name],
-				index = 0;
+                currentBone = this.boneMatrices[name],
+                index = 0;
             while (currentBone) {
                 bones.push(currentBone);
                 currentBone = currentBone.parent;
             }
             var bindex = 0,
-				blength = bones.length,
-				olength = 0;
+                blength = bones.length,
+                olength = 0;
             for (; bindex < blength; bindex++) {
                 currentBone = bones[bindex];
                 originx = currentBone.originX;
@@ -298,9 +298,9 @@
                 rotation = currentBone.rotation;
                 olength = this.bones[name].length;
                 for (i = 0; i < olength; i++) {
-                    index = this.bones[name][i]
+                    index = this.bones[name][i];
                     point = path[index];
-                    newPoint = { "type": point.type, "radius": point.radius }
+                    newPoint = { "type": point.type, "radius": point.radius };
 
                     x = point.x - originx;
                     y = point.y - originy;
@@ -314,9 +314,8 @@
                 }
             }
         }
-        currentBone = null;
         var mindex = 0,
-			mlength = matrices.length;
+            mlength = matrices.length;
         for (; mindex < mlength; mindex++) {
             currentMatrix = matrices[mindex];
             originx = currentMatrix.originX;
@@ -329,7 +328,7 @@
             gPath = [];
             for (i = 0; i < length; i++) {
                 point = path[i];
-                newPoint = { "type": point.type, "radius": point.radius }
+                newPoint = { "type": point.type, "radius": point.radius };
 
                 x = (point.x - originx) * reverse;
                 y = point.y - originy;
@@ -344,7 +343,7 @@
             path = gPath;
         }
         currentMatrix = null;
-        if (gPath.length == 0) {
+        if (gPath.length === 0) {
             console.log(gPath, path, this.name, this);
         }
         return gPath;
@@ -389,7 +388,7 @@
         var nLength = this.path.push({ "type": "control2", "x": cx2, "y": cy2 });
         if (this.buildingBone) {
             this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
-        };
+        }
         this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 3, nLength - 2, nLength - 1]);
         return this;
     };
@@ -409,7 +408,7 @@
         var nLength = this.path.push({ "type": "control1", "x": cpx, "y": cpy });
         if (this.buildingBone) {
             this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
-        };
+        }
         this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
@@ -430,7 +429,7 @@
         var nLength = this.path.push({ "type": "control1", "x": x2, "y": y2 });
         if (this.buildingBone) {
             this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
-        };
+        }
         this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
@@ -447,7 +446,7 @@
         var nLength = this.path.push({ "type": "line", "x": x, "y": y });
         if (this.buildingBone) {
             this.bones[this.buildingBone].push(nLength - 1);
-        };
+        }
         this.paths[this.currentPath].push(nLength - 1);
         return this;
     };
@@ -464,7 +463,7 @@
         var nLength = this.path.push({ "type": "move", "x": x, "y": y });
         if (this.buildingBone) {
             this.bones[this.buildingBone].push(nLength - 1);
-        };
+        }
         this.paths[this.currentPath].push(nLength - 1);
         return this;
     };
@@ -489,7 +488,7 @@
      * @return This CartoonItem
      */
     item.prototype.fillFor = function (value) {
-        this.pathAttrs[this.currentPath]["fillStyle"] = value;
+        this.pathAttrs[this.currentPath].fillStyle = value;
         return this;
     };
 
@@ -501,7 +500,7 @@
      * @return This CartoonItem
      */
     item.prototype.strokeFor = function (value) {
-        this.pathAttrs[this.currentPath]["strokeStyle"] = value;
+        this.pathAttrs[this.currentPath].strokeStyle = value;
         return this;
     };
 
@@ -513,7 +512,7 @@
      * @return This CartoonItem
      */
     item.prototype.lineWidthFor = function (value) {
-        this.pathAttrs[this.currentPath]["lineWidth"] = value;
+        this.pathAttrs[this.currentPath].lineWidth = value;
         return this;
     };
 
@@ -534,8 +533,8 @@
             }
             return success;
         } else {
-            if (value == undefined) {
-                if (this.attrs[name] == undefined) {
+            if (value === undefined) {
+                if (this.attrs[name] === undefined) {
                     if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible"].indexOf(name) == -1) {
                         return false;
                     }
@@ -543,7 +542,7 @@
                 }
                 return this.attrs[name];
             } else {
-                if (this.attrs[name] == undefined) {
+                if (this.attrs[name] === undefined) {
                     if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible"].indexOf(name) == -1) {
                         return false;
                     }
@@ -629,13 +628,13 @@
     matrix.prototype.attr = function (name, value) {
         if (typeof (name) == "object") {
             var success = true,
-				n = null;
+                n = null;
             for (n in name) {
                 success = success && this.attr(n, name[n]);
             }
             return success;
         } else {
-            if (value == undefined) {
+            if (value === undefined) {
                 if (["x", "y", "rotation", "scale"].indexOf(name) == -1) {
                     return false;
                 }
