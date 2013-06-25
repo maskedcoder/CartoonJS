@@ -1,12 +1,17 @@
 {
   "name": "CartoonJS",
   "title": "CartoonJS",
-  "version": "2.1",
+  "version": "2.1.0-beta",
   "author": "Andrew Myers",
   "description": "JavaScript library for creating HTML5 canvas animations",
   "license": "MIT",
   "keywords": [],
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-concat": "~0.3.0"
+  },
   "optionalDependencies": {}
 }

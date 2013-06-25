@@ -1,7 +1,7 @@
-// requestAnimationFrame polyfill
-// This is copied from Erik Moller via Paul Irish
-// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-(function(window) {
+    // requestAnimationFrame polyfill
+    // This is copied from Erik Moller via Paul Irish
+    // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
@@ -24,4 +24,3 @@
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
         };
-}( window ));

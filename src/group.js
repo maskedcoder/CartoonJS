@@ -1,4 +1,3 @@
-(function (global) {
     // Tally of groups for generating id's
 	var groups = 0;
 
@@ -88,4 +87,3 @@
 		}
 		return true;
 	};
-})(this);

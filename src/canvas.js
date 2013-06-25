@@ -1,4 +1,3 @@
-(function (global) {
     // Tally of canvases for generating id's
 	var canvases = 0;
 
@@ -193,6 +192,5 @@
 		console.log("Not implemented");
 	};
 	
-	global.CartoonCanvas = canvas;
-	global.Background = background;
-})(this);
+	window.CartoonCanvas = canvas;
+	window.Background = background;

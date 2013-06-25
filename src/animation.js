@@ -1,4 +1,3 @@
-(function (global) {
 	var LASTFRAME = 0, // Tells the previous frame logged in case of debugging
 		DEBUG = false; // Whether or not to log the frames per second of the animation
 
@@ -817,7 +816,6 @@
 		$("animation-toggle").className = "animation-control "+state;
 	};
 	
-	global.AnimationScene = AnimationScene;
+	window.AnimationScene = AnimationScene;
 	
-	global.CartoonAnimation = animation;
-})(this);
+	window.CartoonAnimation = animation;

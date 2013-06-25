@@ -1,4 +1,3 @@
-(function (global) {
     // Tally of objects for generating id's
     var objects = 0;
 
@@ -559,7 +558,7 @@
         }
         return true;
     };
-    global.CartoonItem = item;
+    window.CartoonItem = item;
 
     // Matrix
 
@@ -650,5 +649,4 @@
         }
         return true;
     };
-    global.Matrix = matrix;
-})(this);
+    window.Matrix = matrix;
