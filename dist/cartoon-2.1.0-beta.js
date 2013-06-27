@@ -148,7 +148,6 @@
     canvas.prototype.removeItem = function (name) {
         var obj = this.items[name];
         this.items[name] = undefined;
-        obj.setParent(null); // Remove reference to any other objects
     };
 
     /**
@@ -488,7 +487,7 @@
             gPath = [],
             matrices = [],
             currentMatrix = this;
-        var originx, originy, scale, cx, cy, rotation, mirror;
+        var originx, originy, scale, cx, cy, rotation, reverse;
         var pi = Math.PI,
             atan2 = Math.atan2,
             sqrt = Math.sqrt,

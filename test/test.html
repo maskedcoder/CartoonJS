@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>CartoonJS tests</title>
+        <link rel="stylesheet" href="resources/qunit-1.12.0.css" />
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <div id="container"></div>
+        <div id="scripts">
+            <script type="text/javascript" src="/dist/cartoon-2.1.0-beta.js"></script>
+            <script type="text/javascript" src="resources/qunit-1.12.0.js"></script>
+            <script type="text/javascript" src="resources/qunit-assert-canvas.js"></script>
+            <script type="text/javascript">
+                module("Setup");
+                test("window.requestAnimationFrame", function () {
+                    equal(typeof (window.requestAnimationFrame), "function", "window.requestAnimationFrame exists");
+                    equal(typeof (window.cancelAnimationFrame), "function", "window.cancelAnimationFrame exists");
+                });
+
+                module("CartoonItem tests");
+
+                var item = new CartoonItem("My Item"),
+                    otherItem = new CartoonItem("His Item"),
+                    matrix = new Matrix("My Matrix"),
+                    otherMatrix = new Matrix("Not My Matrix");
+
+                test("Basic", function () {
+                    equal(item.name, "My Item", "CartoonItem is identified by name");
+
+                    equal(item.setParent(43), false, "CartoonItem cannot have a non-null non-CartoonItem as parent");
+                    equal(item.setParent(otherItem), true, "CartoonItem can have a CartoonItem as parent");
+                    equal(item.parent, otherItem, "The CartoonItem's parent appears in CartoonItem.parent");
+                    item.setParent(null);
+                    equal(item.parent, null, "CartoonItem.setParent(null) removes the parent-child relationship");
+
+                    equal(item.attr("NotARealAttribute", "Anything"), false, "Reference to fake attribute in CartoonItem.attr() results in false");
+                    item.attr("lineWidth", 10);
+                    equal(item.attr("lineWidth"), 10, "CartoonItem.attr(name, value) successfully sets a new value for an attribute");
+                    equal(item.attr({ "lineWidth": 2, "NotReal": 4, "miterLimit": 2 }), false, "Fake attribute won't work, even when among real attributes");
+                    item.attr("y", 20);
+                    equal(item.y, 20, "Spatial attributes can be set with CartoonItem.attr()");
+
+                    item.setParent(otherItem);
+                    otherItem.x = 20;
+                    item.moveTo(0, 0);
+                    equal(item.getGlobalPath()[0].x, 20, "Parent object's spatial attributes manipulate the global position of vertices");
+                    item.setPath([]);
+                    item.paths = [[]];
+                    otherItem.x = 0;
+                });
+                test("CartoonItem with bones", function () {
+                    item.addBone(matrix);
+                    notEqual(item.bones["My Matrix"], undefined, "Matrix can be successfully added");
+
+                    item.setBoneSegments(matrix, [1, 2, 3]);
+                    deepEqual(item.bones["My Matrix"], [1, 2, 3], "Vertices can be put under a Matrix's control");
+                    equal(item.setBoneSegments(otherMatrix, [1, 2, 3]), false, "A foreign Matrix cannot have control over a CartoonItem's vertices");
+
+                    item.setBoneSegments(matrix, []);
+
+                    item.beginBone(matrix);
+                    item.moveTo(10, 10);
+                    deepEqual(item.bones["My Matrix"], [0], "Vertices automatically added to the current bone");
+                    item.endBone();
+                    item.lineTo(-10, 10);
+                    deepEqual(item.bones["My Matrix"], [0], "Vertices no longer automatically added after CartoonItem.endBone() called");
+
+                    matrix.x = 10;
+                    equal(item.getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
+                });
+                test("CartoonItem paths", function () {
+                    otherItem.moveTo(-10, -10);
+                    equal(otherItem.getPath().length, 1, "CartoonItem.moveTo() creates 1 new vertex");
+                    equal(otherItem.getPath()[0].type, "move", "The type for the new vertex is 'move'");
+
+                    otherItem.lineTo(10, -10);
+                    equal(otherItem.getPath().length, 2, "CartoonItem.lineTo() creates 1 new vertex");
+                    equal(otherItem.getPath()[1].type, "line", "The type for the new vertex is 'line'");
+
+                    otherItem.bezierCurveTo(10, 10, 20, -10, 20, 10);
+                    equal(otherItem.getPath().length, 5, "CartoonItem.bezierCurveTo() creates 3 new vertices");
+                    equal(otherItem.getPath()[2].type, "bezierCurve", "The type for the first new vertex is 'bezierCurve'");
+                    equal(otherItem.getPath()[3].type, "control1", "The type for the second new vertex is 'control1'");
+                    equal(otherItem.getPath()[4].type, "control2", "The type for third new new vertex is 'control2'");
+
+                    otherItem.quadraticCurveTo(-10, 10, 0, 20);
+                    equal(otherItem.getPath().length, 7, "CartoonItem.quadraticCurveTo() creates 5 new vertices");
+                    equal(otherItem.getPath()[5].type, "quadraticCurve", "The type for the first new vertex is 'quadraticCurve'");
+                    equal(otherItem.getPath()[6].type, "control1", "The type for the second new vertex is 'control1'");
+
+                    otherItem.arcTo(-10, -10, -20, 0, 10);
+                    equal(otherItem.getPath().length, 9, "CartoonItem.quadraticCurveTo() creates 5 new vertices");
+                    equal(otherItem.getPath()[7].type, "arc", "The type for the first new vertex is 'arc'");
+                    equal(otherItem.getPath()[8].type, "control1", "The type for the second new vertex is 'control1'");
+                    equal(otherItem.getPath()[7].radius, 10, "The first vertex has an attribute 'radius', with the expected value");
+
+                    otherItem.lineWidthFor(3);
+                    equal(otherItem.pathAttrs[0].lineWidth, 3, "Can set line width for individual paths");
+                    otherItem.strokeFor("#343434");
+                    equal(otherItem.pathAttrs[0].strokeStyle, "#343434", "Can set stroke for individual paths");
+                    otherItem.fillFor("rgb(0,0,0)");
+                    equal(otherItem.pathAttrs[0].fillStyle, "rgb(0,0,0)", "Can set fill for individual paths");
+
+                    otherItem.endPath();
+                    equal(otherItem.currentPath, 1, "CartoonItem.endPath() ends creation of current path")
+                    equal(otherItem.paths.length, 2, "CartoonItem.endPath() prepares for new creating new path");
+                });
+
+                module("Matrix tests");
+
+                test("Basic", function () {
+                    equal(matrix.name, "My Matrix", "Matrices have names");
+
+                    equal(matrix.setMatrix(otherMatrix), true, "Matrices can have parent Matrices");
+                    equal(matrix.setMatrix(matrix), false, "Matrices cannot be their own parents");
+                    equal(matrix.setMatrix(item), false, "Matrices can only have Matrices for parents");
+                    matrix.setMatrix(null);
+                    equal(matrix.matrix, null, "Matrix.setParent(null) clears the parent-child relationship");
+
+                    matrix.attr("x", 15);
+                    equal(matrix.x, 15, "Matrix.attr() can set values");
+                    equal(matrix.attr("x"), matrix.x, "Matrix.attr([name]) is the same as Matrix.[name]");
+                    equal(matrix.attr("NotHere", 40), false, "Matrix.attr() won't let you set values for non-existent attributes");
+                    equal(matrix.attr({ "x": 30, "y": 10, "rotation": 45 }), true, "You can set multiple values at once by giving Matrix.attr() an object");
+                });
+
+                module("Canvas tests");
+
+                var noCanvas = new CartoonCanvas(5, 5),
+                    canvas = new CartoonCanvas("container", 900, 600),
+                    noCanvasBackground = new Background(5, 5),
+                    background = new Background("container", 900, 600);
+                test("Basic", function () {
+                    equal(noCanvas.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new CartoonCanvas if no element is given");
+                    equal(canvas.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
+
+                    canvas.addItem(item);
+                    equal(canvas.items["My Item"], item, "CartoonCanvases can hold CartoonItems");
+                    equal(canvas.getItem(item.name), item, "CartoonItems can be referenced by name when they are in a CartoonCanvas");
+                    canvas.removeItem(item.name);
+                    equal(canvas.getItem(item.name), undefined, "CartoonItems can be removed entirely from a CartoonCanvas, using CartoonCanvas.removeItem()");
+                });
+
+                module("Background tests");
+
+                test("Basic", function () {
+                    equal(noCanvasBackground.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new Background if no element is given");
+                    equal(background.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
+                });
+            </script>
+        </div>
+    </body>
+</html>
