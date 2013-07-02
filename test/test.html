@@ -7,13 +7,11 @@
         <link rel="stylesheet" href="resources/qunit-1.12.0.css" />
     </head>
     <body>
-        <div id="qunit"></div>
+        <div id="qunit"><div id="container"></div></div>
         <div id="qunit-fixture"></div>
-        <div id="container"></div>
         <div id="scripts">
             <script type="text/javascript" src="/dist/cartoon-2.1.0-beta.js"></script>
             <script type="text/javascript" src="resources/qunit-1.12.0.js"></script>
-            <script type="text/javascript" src="resources/qunit-assert-canvas.js"></script>
             <script type="text/javascript">
                 module("Setup");
                 test("window.requestAnimationFrame", function () {
@@ -23,12 +21,9 @@
 
                 module("CartoonItem tests");
 
-                var item = new CartoonItem("My Item"),
-                    otherItem = new CartoonItem("His Item"),
-                    matrix = new Matrix("My Matrix"),
-                    otherMatrix = new Matrix("Not My Matrix");
-
                 test("Basic", function () {
+                    var item = new CartoonItem("My Item"),
+                        otherItem = new CartoonItem("His Item");
                     equal(item.name, "My Item", "CartoonItem is identified by name");
 
                     equal(item.setParent(43), false, "CartoonItem cannot have a non-null non-CartoonItem as parent");
@@ -53,6 +48,9 @@
                     otherItem.x = 0;
                 });
                 test("CartoonItem with bones", function () {
+                    var item = new CartoonItem("My Item"),
+                        matrix = new Matrix("My Matrix"),
+                        otherMatrix = new Matrix("Not My Matrix");
                     item.addBone(matrix);
                     notEqual(item.bones["My Matrix"], undefined, "Matrix can be successfully added");
 
@@ -73,6 +71,7 @@
                     equal(item.getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
                 });
                 test("CartoonItem paths", function () {
+                    var otherItem = new CartoonItem("His Item");
                     otherItem.moveTo(-10, -10);
                     equal(otherItem.getPath().length, 1, "CartoonItem.moveTo() creates 1 new vertex");
                     equal(otherItem.getPath()[0].type, "move", "The type for the new vertex is 'move'");
@@ -113,6 +112,9 @@
                 module("Matrix tests");
 
                 test("Basic", function () {
+                    var item = new CartoonItem("My Item"),
+                        matrix = new Matrix("My Matrix"),
+                        otherMatrix = new Matrix("Not My Matrix");
                     equal(matrix.name, "My Matrix", "Matrices have names");
 
                     equal(matrix.setMatrix(otherMatrix), true, "Matrices can have parent Matrices");
@@ -130,11 +132,10 @@
 
                 module("Canvas tests");
 
-                var noCanvas = new CartoonCanvas(5, 5),
-                    canvas = new CartoonCanvas("container", 900, 600),
-                    noCanvasBackground = new Background(5, 5),
-                    background = new Background("container", 900, 600);
                 test("Basic", function () {
+                    var noCanvas = new CartoonCanvas(5, 5),
+                        canvas = new CartoonCanvas("container", 900, 600),
+                        item = new CartoonItem("My Item");
                     equal(noCanvas.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new CartoonCanvas if no element is given");
                     equal(canvas.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
 
@@ -144,12 +145,87 @@
                     canvas.removeItem(item.name);
                     equal(canvas.getItem(item.name), undefined, "CartoonItems can be removed entirely from a CartoonCanvas, using CartoonCanvas.removeItem()");
                 });
+                test("Canvas graphics", function () {
+                    var newitem = new CartoonItem("New Item"),
+                        canvas = new CartoonCanvas("container", 900, 600);
+                    newitem.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
+                    newitem.attr("fillStyle", "#f00");
+                    newitem.attr("strokeStyle", "#f00");
+                    canvas.addItem(newitem);
+                    canvas.draw();
+                    pixelEqual(canvas.canvas, 9, 9, 255, 0, 0, 255, "CartoonScene will draw its personal CartoonItems");
+                    canvas.removeItem("New Item");
+                    canvas.draw();
+                    pixelEqual(canvas.canvas, 9, 9, 0, 0, 0, 0, "CartoonScene will not draw CartoonItems after they have been removed");
+                });
 
                 module("Background tests");
 
                 test("Basic", function () {
+                    var canvas = new CartoonCanvas("container", 900, 600),
+                        noCanvasBackground = new Background(5, 5),
+                        background = new Background("container", 900, 600);
                     equal(noCanvasBackground.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new Background if no element is given");
                     equal(background.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
+                    background.ctext.fillStyle = "#0f0"; // fillStyle defaults to #000, so we have to change it to prove nothing is being drawn
+                    background.draw();
+                    pixelEqual(background.canvas, 0, 0, 0, 0, 0, 0, "Background will not draw unless a custom method is provided");
+                    background.draw = function () {
+                        this.ctext.fillStyle = "#f00";
+                        this.ctext.fillRect(0, 0, this.width, this.height);
+                    };
+                    background.draw();
+                    pixelEqual(background.canvas, 0, 0, 255, 0, 0, 255, "Background can draw when a custom method is given");
+
+
+                });
+
+                module("CartoonAnimation tests");
+
+                test("Basic", function () {
+                    //expect(4);
+                    var canvas = new CartoonCanvas("container", 200, 100),
+                        anim = new CartoonAnimation("container"),
+                        firstscene = new AnimationScene(canvas),
+                        square = new CartoonItem("Square");
+                    square.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
+                    square.attr("fillStyle", "#f00");
+                    square.attr("strokeStyle", "#f00");
+                    canvas.addItem(square);
+
+                    equal(document.getElementById("animation-controls").parentNode.id, "container", "Animation controls drawn in the element with the id provided");
+                    firstscene.hide();
+                    equal(canvas.canvas.style.display, "none", "Hiding an AnimationScene hides the canvases associated with it");
+                    firstscene.show();
+                    equal(canvas.canvas.style.display, "", "Showing an AnimationScene makes its associated canvases reappear");
+                    firstscene.addKeyFrame(square, 1000, "x", 100);
+                    anim.addScene(firstscene, 0);
+                    anim.play();
+                    equal(anim.status, "playing", "CartoonAnimation.play() plays the animation");
+                    anim.togglePlay();
+                    equal(anim.status, "paused", "CartoonAnimation.togglePlay() pauses the animation");
+                    anim.togglePlay();
+                    equal(anim.status, "playing", "CartoonAnimation.togglePlay() then resumes the animation");
+                    anim.pause();
+                    equal(anim.status, "paused", "CartoonAnimation.pause() pauses the animation");
+                    anim.resume();
+                    equal(anim.status, "playing", "CartoonAnimation.resume() then resumes the animation");
+                    anim.stop();
+                    equal(anim.status, "ready", "CartoonAnimation.stop() halts the animation");
+                    equal(anim.time, 0, "CartoonAnimation.stop() sends the animation back to the start");
+                    anim.setTime(1000);
+                    equal(anim.time, 1000, "CartoonAnimation.setTime() can set the time");
+                    anim.back15();
+                    equal(anim.time, 0, "CartoonAnimation.back15() sends the animation back to the start if the animation is less than 15 seconds long");
+                    stop();
+                    anim.play();
+                    setTimeout(function () {
+                        equal(anim.status, "ready", "The CartoonAnimation has a status of `ready' when it finishes");
+                        start();
+                        // Why just more than 90? The animating is not exact. We don't know when the last frame really was.
+                        ok(square.x > 90, "The CartoonObject has moved during the animation");
+                    }, 1500);
+
                 });
             </script>
         </div>
