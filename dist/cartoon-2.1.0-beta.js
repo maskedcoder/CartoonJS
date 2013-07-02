@@ -94,6 +94,7 @@
             canvas.style.left = el.offsetLeft;
             canvas.style.top = el.offsetTop;
             w = width || el.clientWidth || w;
+            h = height || el.clientHeight || h;
         }
 
         canvas.id = "canvas" + canvases;
@@ -120,7 +121,7 @@
      * Clears the CartoonCanvas and draws all of the child CartoonItems
      */
     canvas.prototype.draw = function () {
-        ctext = this.ctext;
+        var ctext = this.ctext;
         ctext.clearRect(0,0,this.width,this.height);
         for (var name in this.items) {
             if (this.items[name].visible) {
@@ -146,8 +147,7 @@
      * @param name The name of the CartoonItem object to remove
      */
     canvas.prototype.removeItem = function (name) {
-        var obj = this.items[name];
-        this.items[name] = undefined;
+        delete this.items[name];
     };
 
     /**
