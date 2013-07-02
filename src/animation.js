@@ -695,7 +695,7 @@
         if (typeof(element) == "string") {
             element = $(element);
         }
-        var newEl = "<div id=\"animation-controls\" style=\"display: none; \">" +
+        var newEl = "<div id=\"animation-controls-container\"><div id=\"animation-controls\" style=\"display: none; \">" +
                 "<div id=\"animation-time-holder\">" + 
                     "<span id=\"animation-time\">0:00</span></div>" +
                 "<div class=\"animation-control\" id=\"animation-toggle\"><span>&nbsp;</span></div>" +
@@ -703,7 +703,7 @@
                 "<div class=\"animation-control\" id=\"animation-back15\"><span>&nbsp;</span></div>" +
                 "<div id=\"animation-meter\">" +
                     "<span id=\"animation-marker\" style=\"left: -3px; \" >&nbsp;</span>" +
-            "</div></div>";
+            "</div></div></div>";
         element.innerHTML += newEl;
         element.onmouseover = function () {
             showControls();
@@ -719,14 +719,14 @@
         element.onmouseout = function () {
             hideControls();
         };
-        $("animation-controls").onmouseover = function (e) {
+        $("animation-controls-container").onmouseover = function (e) {
             showControls();
             if (timer) {
                 window.clearTimeout(timer);
             }
             e.stopPropagation();
         };
-        $("animation-controls").onmousemove = function (e) {
+        $("animation-controls-container").onmousemove = function (e) {
             e.stopPropagation();
         };
         $("animation-toggle").onclick = function () {
@@ -798,10 +798,10 @@
      * @param total The length of the animation
      */
     controls.prototype.step = function (time, total) {
-        time = time/1000;
         var prct = time/total,
-            text = Math.floor(time/60) + ":",
-            secs = String(Math.floor(time%60));
+            time_in_seconds = time/1000,
+            text = Math.floor(time_in_seconds/60) + ":",
+            secs = String(Math.floor(time_in_seconds%60));
         text += (secs.length == 1) ? "0" : "";
         $("animation-time").innerHTML = text+secs;
         if (!dragging) {
