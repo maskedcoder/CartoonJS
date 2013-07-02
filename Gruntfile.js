@@ -29,12 +29,20 @@ module.exports = function (grunt) {
         jshint: {
             all: ["src/request-animation-frame.js", "src/canvas.js", "src/item.js", "src/animation.js"],
             build: "<%= concat.dist.dest %>"
+        },
+        sass: {
+            dist: {
+                files: {
+                    "dist/cartoon.css": "src/cartoon.scss"
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-sass');
 
-    grunt.registerTask('default', ['concat', 'uglify']);
+    grunt.registerTask('default', ['concat', 'uglify', 'sass']);
 };
