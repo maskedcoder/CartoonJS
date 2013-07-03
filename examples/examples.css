@@ -1,0 +1,16 @@
+#scripts {
+	position: absolute;
+	top: -10000px;
+	left: -10000px;
+	width: 1000px;
+	height: 1000px;
+}
+
+#container {
+    border: 2px solid red;
+    margin-left: auto;
+    margin-right: auto;
+    height: 600px;
+    width: 900px;
+    position: relative;
+}
