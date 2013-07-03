@@ -13,13 +13,14 @@
     };*/
 
     /**
-     * Animation initializer
+     * Animation initializer. If makeControls is true, an interface will be
+     * generated and placed inside whatever element has an id 'animation-controls-container'
      *
-     * @param element An element to contain the controls (optional)
+     * @param makeControls Whether or not graphical controls should be generated
      *
      * @return The new Animation
      */
-    var animation = function (element) {
+    var animation = function (makeControls) {
         
         this.time = 0;
         this.status = "ready";
@@ -30,20 +31,18 @@
         this.lastframe = 0;
         this.audio = null;
         
-        if (element) {
-            this.createControls(element);
+        if (makeControls) {
+            this.createControls();
         }
     };
 
     /**
      * Creates the controls for the animation
      *
-     * @param element An element to contain the controls
-     *
      * @return New Controls object
      */
-    animation.prototype.createControls = function (element) {
-        return new controls(this, element);
+    animation.prototype.createControls = function () {
+        return new controls(this);
     };
     
     /**
@@ -683,27 +682,24 @@
         startX = 0; // The start of the drag, if the user is dragging
 
     /**
-     * Generates the controls for the Animation, inside the element
+     * Generates the controls for the Animation inside whatever element has the id 'animation-controls-container'
      *
      * @param animation Animation that will be controlled
-     * @param element An HTML Element or its id, that the controls will be placed in
      *
      * @return new Controls object
      */
-    var controls = function (animation, element) {
+    var controls = function (animation) {
         this.animation = animation;
-        if (typeof(element) == "string") {
-            element = $(element);
-        }
-        var newEl = "<div id=\"animation-controls-container\"><div id=\"animation-controls\" style=\"display: none; \">" +
-                "<div id=\"animation-time-holder\">" + 
+        var element = $("animation-controls-container");
+        var newEl = "<div id=\"animation-controls\" style=\"display: none; \">" +
+                "<div id=\"animation-time-holder\">" +
                     "<span id=\"animation-time\">0:00</span></div>" +
                 "<div class=\"animation-control\" id=\"animation-toggle\"><span>&nbsp;</span></div>" +
                 "<div class=\"animation-control\" id=\"animation-stop\"><span>&nbsp;</span></div>" +
                 "<div class=\"animation-control\" id=\"animation-back15\"><span>&nbsp;</span></div>" +
                 "<div id=\"animation-meter\">" +
                     "<span id=\"animation-marker\" style=\"left: -3px; \" >&nbsp;</span>" +
-            "</div></div></div>";
+            "</div></div>";
         element.innerHTML += newEl;
         element.onmouseover = function () {
             showControls();

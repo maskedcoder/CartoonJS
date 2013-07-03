@@ -14,7 +14,7 @@ Here is an example .html file:
             <link rel="stylesheet" href="controls.css" />
         </head>
         <body>
-            <div id="container"></div>
+            <div id="container"><div id="animation-controls-container"></div></div>
             <script src="cartoon.js"></script>
             <script src="my_example_cartoon.js"></script>
         </body>
@@ -44,8 +44,8 @@ Here is an example of a simple animation:
     // Put the square in the canvas
     canvas.addItem(square);
 
-    // Create the animation
-    var animation = new CartoonAnimation();
+    // Create the animation and create a gui to control it
+    var animation = new CartoonAnimation(true);
 
     // Create a scene for our animation
     var scene = new AnimationScene(canvas);
@@ -480,17 +480,15 @@ Provides an interface for creating and playing an animation.
 
 #### Animation Methods
 
-##### Animation([element]) -> new Animation object
+##### Animation(makeControls) -> new Animation object
 
-Creates a new animation. If `element` is set, the controls for the animation will be placed inside it. Otherwise, controls will have to be implemented by hand.
+Creates a new animation. If `makeControls` is `true`, the controls for the animation will be placed inside the element with the id 'animation-controls-container'. Otherwise, controls will have to be implemented by hand.
 
-- `element` : An HTML element or a string representing an element id
+- `makeControls` : Whether or not a gui should be automatically generated
 
-##### Animation.createControls(element) -> new Controls object
+##### Animation.createControls() -> new Controls object
 
-Builds the controls for the animation inside the element specified.
-
-- `element` : An HTML element or a string representing an element id
+Builds the controls for the animation inside the element specified. The controls will be placed inside the element with the id 'animation-controls-container'.
 
 ##### Animation.itemTransformForTime(item, time) -> object
 
@@ -631,12 +629,11 @@ Implements a graphical interface for the user to control the animation. The inte
 
 #### Controls Methods
 
-##### Controls(animation, element) -> new Controls object
+##### Controls(animation) -> new Controls object
 
-Creates the Controls object, which will control the Animation `animation`. The DOM elements that make up the interface will be placed inside the element given.
+Creates the Controls object, which will control the Animation `animation`. The DOM elements that make up the interface will be placed inside the element with the id 'animation-controls-container' (for styling purposes).
 
 - `animation` : The Animation object that the user will control
-- `element` : The HTML element, or the id that corresponds to such an element, which the interface will be placed inside
 
 ##### Controls.step(time, total) -> null
 
