@@ -291,10 +291,10 @@
         var currentScene = this.scenes[scenetime];
         
         if (currentScene.hidden) {
-            currentScene.show();
             if (this.sceneChanges.indexOf(scenetime)+1 < this.sceneChanges.length) {
                 this.scenes[this.sceneChanges[this.sceneChanges.indexOf(scenetime)+1]].hide();
             }
+            currentScene.show();
         }
         
         currentScene.stepAnimation(time, update);
