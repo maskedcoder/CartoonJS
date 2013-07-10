@@ -603,10 +603,10 @@
         if (time > this.lastframe) {
             this.lastframe = time;
         }
-        if (typeof(item) != "string") {
+        if (typeof (item) != "string") {
             item = item.name;
         }
-        
+
         if (this.immediateTimeline[time] === undefined) {
             this.immediateTimeline[time] = {};
         }
@@ -615,6 +615,12 @@
             };
         }
         this.immediateTimeline[time][item][attr] = val;
+        if (!this.immediateTimeline[0] || !this.immediateTimeline[0][item] || !this.immediateTimeline[0][item][attr]) {
+            var tmp = {};
+            tmp[item] = {};
+            tmp[item][attr] = this.scene.getItem(item).attr(attr);
+            this.immediateTimeline[0] = tmp;
+        }
     };
 
     /**
