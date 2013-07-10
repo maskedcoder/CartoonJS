@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="resources/qunit-1.12.0.css" />
     </head>
     <body>
-        <div id="qunit"><div id="container"></div></div>
+        <div id="qunit"></div>
         <div id="qunit-fixture"></div>
         <div id="scripts">
             <script type="text/javascript" src="/dist/cartoon-2.1.0-beta.js"></script>
@@ -134,10 +134,10 @@
 
                 test("Basic", function () {
                     var noCanvas = new CartoonCanvas(5, 5),
-                        canvas = new CartoonCanvas("container", 900, 600),
+                        canvas = new CartoonCanvas("qunit-fixture", 900, 600),
                         item = new CartoonItem("My Item");
                     equal(noCanvas.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new CartoonCanvas if no element is given");
-                    equal(canvas.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
+                    equal(canvas.canvas.parentNode.id, "qunit-fixture", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
 
                     canvas.addItem(item);
                     equal(canvas.items["My Item"], item, "CartoonCanvases can hold CartoonItems");
@@ -147,7 +147,7 @@
                 });
                 test("Canvas graphics", function () {
                     var newitem = new CartoonItem("New Item"),
-                        canvas = new CartoonCanvas("container", 900, 600);
+                        canvas = new CartoonCanvas("qunit-fixture", 900, 600);
                     newitem.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
                     newitem.attr("fillStyle", "#f00");
                     newitem.attr("strokeStyle", "#f00");
@@ -162,11 +162,11 @@
                 module("Background tests");
 
                 test("Basic", function () {
-                    var canvas = new CartoonCanvas("container", 900, 600),
+                    var canvas = new CartoonCanvas("qunit-fixture", 900, 600),
                         noCanvasBackground = new Background(5, 5),
-                        background = new Background("container", 900, 600);
+                        background = new Background("qunit-fixture", 900, 600);
                     equal(noCanvasBackground.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new Background if no element is given");
-                    equal(background.canvas.parentNode.id, "container", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
+                    equal(background.canvas.parentNode.id, "qunit-fixture", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
                     background.ctext.fillStyle = "#0f0"; // fillStyle defaults to #000, so we have to change it to prove nothing is being drawn
                     background.draw();
                     pixelEqual(background.canvas, 0, 0, 0, 0, 0, 0, "Background will not draw unless a custom method is provided");
@@ -184,8 +184,9 @@
 
                 test("Basic", function () {
                     //expect(4);
-                    var canvas = new CartoonCanvas("container", 200, 100),
-                        anim = new CartoonAnimation("container"),
+                    document.getElementById("qunit-fixture").innerHTML += "<div id=\"animation-controls-container\"></div>"; // Insert the controls container
+                    var canvas = new CartoonCanvas("qunit-fixture", 200, 100),
+                        anim = new CartoonAnimation(true),
                         firstscene = new AnimationScene(canvas),
                         square = new CartoonItem("Square");
                     square.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
@@ -193,7 +194,6 @@
                     square.attr("strokeStyle", "#f00");
                     canvas.addItem(square);
 
-                    equal(document.getElementById("animation-controls").parentNode.id, "container", "Animation controls drawn in the element with the id provided");
                     firstscene.hide();
                     equal(canvas.canvas.style.display, "none", "Hiding an AnimationScene hides the canvases associated with it");
                     firstscene.show();
