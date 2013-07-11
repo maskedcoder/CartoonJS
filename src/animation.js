@@ -2,17 +2,6 @@
         DEBUG = false; // Whether or not to log the frames per second of the animation
 
     /**
-     * Creates a new Animation
-     *
-     * @param element An element to contain the controls (optional)
-     *
-     * @return The new Animation
-     */
-    /*var init = function (element) {
-        return new animation(element);
-    };*/
-
-    /**
      * Animation initializer. If makeControls is true, an interface will be
      * generated and placed inside whatever element has an id 'animation-controls-container'
      *
@@ -43,68 +32,6 @@
      */
     animation.prototype.createControls = function () {
         return new controls(this);
-    };
-    
-    /**
-     * Gets a given CartoonItem's transformation for a given time
-     *
-     * @param item CartoonItem
-     * @param time Number
-     */
-    animation.prototype.itemTransformForTime = function (item, time) {
-        var t = null,
-            attr = {},
-            name = null,
-            frame = null;
-        for (t in this.timeline) {
-            frame = this.timeline[t];
-            if (frame[name] !== undefined) {
-                for (name in frame[name]) {
-                    attr[name] = frame[name];
-                }
-            }
-            if (time == t) {
-                break;
-            }
-        }
-        return attr;
-    };
-    
-    /**
-     * Adds a key frame, wherein the item has a specific value for a specific value at the specific time
-     *
-     * @param item CartoonItem or name of a CartoonItem
-     * @param time Time during the animation
-     * @param attr Name of a CartoonItem attribute
-     * @param val The value for that attribute
-     */
-    animation.prototype.addKeyFrame = function (item, time, attr, val) {
-        // item -> object or name, time -> int, attr -> name of item attribute,
-        // val -> value for said attribute at said time
-        // Timeline will be:
-        // {item:{attr:{time:val, keys:[list_of_times]}}}
-        if (time > this.lastframe) {
-            this.lastframe = time;
-        }
-        if (typeof(item) != "string") {
-            item = item.name;
-        }
-        if (this.timeline[item] === undefined) {
-            this.timeline[item] = {};
-        }
-        if (this.timeline[item][attr] === undefined) {
-            this.timeline[item][attr] = {
-                "keys": []
-            };
-        }
-        this.timeline[item][attr][time] = val;
-        if (this.timeline[item][attr].keys.indexOf(time) == -1) {
-            this.timeline[item][attr].keys.push(time);
-        }
-        if (this.timeline[item][attr][0] === undefined) {
-            this.timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
-            this.timeline[item][attr].keys.push(0);
-        }
     };
     
     /**
@@ -168,7 +95,7 @@
         if (this.audio) {
             this.audio.play();
         }
-        this.stepAnimation();
+        this._step();
     };
 
     /**
@@ -199,7 +126,7 @@
             this.audio.pause();
             this.audio.currentTime = 0;
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -221,7 +148,7 @@
         if (this.audio) {
             this.audio.play();
         }
-        this.stepAnimation();
+        this._step();
     };
 
     /**
@@ -241,7 +168,7 @@
         if (this.status != "playing") {
             this.status = "paused";
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -259,7 +186,7 @@
         if (this.status != "playing") {
             this.status = "paused";
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -267,8 +194,9 @@
      * If a value is given for update, the current time is recalculated, but the function will not ask to be called again
      *
      * @param update Bool
+     * @private
      */
-    animation.prototype.stepAnimation = function(update) {
+    animation.prototype._step = function(update) {
         if (update) {
             this.time = +new Date() - this.startTime;
         } else {
@@ -317,7 +245,7 @@
         if (time < this.lastframe) {
             (function (anim) {
                 requestAnimationFrame(function () {
-                    anim.stepAnimation();
+                    anim._step();
                 });
             })(this);
         } else {
@@ -471,13 +399,13 @@
     var AnimationScene = function (scene, background) {
         this.background = background;
         this.scene = scene;
-        this.timeline = {};
-        this.immediateTimeline = {};
-        this.subAnimations = [];
+        this._timeline = {};
+        this._immediateTimeline = {};
+        this._subAnimations = [];
         this.lastframe = -1;
-        this.drawnYet = false;
+        this._drawnYet = false;
         this.hidden = false;
-        this.MYLASTFRAME = -1;
+        this._MYLASTFRAME = -1;
     };
 
     /**
@@ -510,9 +438,9 @@
      * @param update Whether we are jumping to a specific place
      */
     AnimationScene.prototype.stepAnimation = function (time, update) {
-        this.drawnYet = true;
+        this._drawnYet = true;
         var i = 0,
-            anims = this.subAnimations,
+            anims = this._subAnimations,
             length = anims.length,
             current = null;
         for ( ;i < length;i++) {
@@ -523,10 +451,10 @@
         }
         var kframe, items, attr, item;
         var klist = [];
-        for (kframe in this.immediateTimeline) {
+        for (kframe in this._immediateTimeline) {
             klist.push(kframe);
-            if ((this.MYLASTFRAME < kframe && time >= kframe) || (time < this.MYLASTFRAME && time == kframe)) {
-                items = this.immediateTimeline[kframe];
+            if ((this._MYLASTFRAME < kframe && time >= kframe) || (time < this._MYLASTFRAME && time == kframe)) {
+                items = this._immediateTimeline[kframe];
                 for (item in items) {
                     this.scene.getItem(item).attr(items[item]);
                 }
@@ -537,7 +465,7 @@
             for (i = 0, length = klist.length;i < length;i++) {
                 kframe = klist[i];
                 if (kframe <= time) {
-                    items = this.immediateTimeline[kframe];
+                    items = this._immediateTimeline[kframe];
                     for (item in items) {
                         this.scene.getItem(item).attr(items[item]);
                     }
@@ -546,7 +474,7 @@
                 }
             }
         }
-        this.MYLASTFRAME = time;
+        this._MYLASTFRAME = time;
         this.scene.draw();
     };
 
@@ -569,21 +497,21 @@
         if (typeof(item) != "string") {
             item = item.name;
         }
-        if (this.timeline[item] === undefined) {
-            this.timeline[item] = {};
+        if (this._timeline[item] === undefined) {
+            this._timeline[item] = {};
         }
-        if (this.timeline[item][attr] === undefined) {
-            this.timeline[item][attr] = {
+        if (this._timeline[item][attr] === undefined) {
+            this._timeline[item][attr] = {
                 "keys": []
             };
         }
-        this.timeline[item][attr][time] = val;
-        if (this.timeline[item][attr].keys.indexOf(time) == -1) {
-            this.timeline[item][attr].keys.push(time);
+        this._timeline[item][attr][time] = val;
+        if (this._timeline[item][attr].keys.indexOf(time) == -1) {
+            this._timeline[item][attr].keys.push(time);
         }
-        if (this.timeline[item][attr][0] === undefined) {
-            this.timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
-            this.timeline[item][attr].keys.push(0);
+        if (this._timeline[item][attr][0] === undefined) {
+            this._timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
+            this._timeline[item][attr].keys.push(0);
         }
     };
 
@@ -607,19 +535,19 @@
             item = item.name;
         }
 
-        if (this.immediateTimeline[time] === undefined) {
-            this.immediateTimeline[time] = {};
+        if (this._immediateTimeline[time] === undefined) {
+            this._immediateTimeline[time] = {};
         }
-        if (this.immediateTimeline[time][item] === undefined) {
-            this.immediateTimeline[time][item] = {
+        if (this._immediateTimeline[time][item] === undefined) {
+            this._immediateTimeline[time][item] = {
             };
         }
-        this.immediateTimeline[time][item][attr] = val;
-        if (!this.immediateTimeline[0] || !this.immediateTimeline[0][item] || !this.immediateTimeline[0][item][attr]) {
+        this._immediateTimeline[time][item][attr] = val;
+        if (!this._immediateTimeline[0] || !this._immediateTimeline[0][item] || !this._immediateTimeline[0][item][attr]) {
             var tmp = {};
             tmp[item] = {};
             tmp[item][attr] = this.scene.getItem(item).attr(attr);
-            this.immediateTimeline[0] = tmp;
+            this._immediateTimeline[0] = tmp;
         }
     };
 
@@ -628,13 +556,13 @@
      */
     AnimationScene.prototype.compile = function () {
         var sort = function (a, b) { return a - b; };
-        this.MYLASTFRAME = -1;
-        this.drawnYet = false;
-        if (this.subAnimations.length === 0) {
+        this._MYLASTFRAME = -1;
+        this._drawnYet = false;
+        if (this._subAnimations.length === 0) {
             var item, time, attr, keyIncr, numKeys,
                 itemName, timeName, attrName, prevTime;
-            for (itemName in this.timeline) {
-                item = this.timeline[itemName];
+            for (itemName in this._timeline) {
+                item = this._timeline[itemName];
                 for (attrName in item) {
                     attr = item[attrName];
                     attr.keys.sort(sort);
@@ -642,7 +570,7 @@
                         timeName = attr.keys[keyIncr];
                         if (keyIncr > 0) {
                             prevTime = attr.keys[keyIncr - 1];
-                            this.subAnimations.push(
+                            this._subAnimations.push(
                                 new subAnimation(
                                     this.scene.getItem(itemName),
                                     attrName, attr[prevTime],

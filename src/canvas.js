@@ -2,33 +2,6 @@
     var canvases = 0;
 
     /**
-     * Creates a new CartoonCanvas
-     *
-     * @param element The parent element for the new canvas
-     * @param width The canvas width
-     * @param height The canvas height
-     *
-     * @return CartoonCanvas object
-     */
-    /* init = function (element, width, height) {
-        return new canvas(element, width, height);
-    };*/
-
-    /**
-     * Creates a new Background canvas
-     *
-     * @param element The parent element for the new canvas
-     * @param width The canvas width
-     * @param height The canvas height
-     *
-     * @return Background object
-     */
-    /*var background_init = function (element, width, height) {
-        return new background(element, width, height);
-    };*/
-
-
-    /**
      * CartoonCanvas initializer.
      * ([element || id], width, height)
      * 
@@ -77,9 +50,7 @@
         this.height = h;
         this.canvas = canvas;
 
-        this.items = {};
-        this.refreshOpts = 0;
-        this.background = "#fff";
+        this._items = {};
 
         canvas = null;
         el = null;
@@ -91,10 +62,10 @@
     canvas.prototype.draw = function () {
         var ctext = this.ctext;
         ctext.clearRect(0,0,this.width,this.height);
-        for (var name in this.items) {
-            if (this.items[name].visible) {
+        for (var name in this._items) {
+            if (this._items[name].visible) {
                 ctext.save();
-                this.items[name].draw(ctext);
+                this._items[name].draw(ctext);
                 ctext.restore();
             }
         }
@@ -106,7 +77,7 @@
      * @param item CartoonItem object
      */
     canvas.prototype.addItem = function (item) {
-        this.items[item.name] = item;
+        this._items[item.name] = item;
     };
 
     /**
@@ -115,7 +86,7 @@
      * @param name The name of the CartoonItem object to remove
      */
     canvas.prototype.removeItem = function (name) {
-        delete this.items[name];
+        delete this._items[name];
     };
 
     /**
@@ -124,7 +95,7 @@
      * @param name The name of the CartoonItem object
      */
     canvas.prototype.getItem = function (name) {
-        return this.items[name];
+        return this._items[name];
     };
 
     

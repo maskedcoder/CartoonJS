@@ -42,7 +42,7 @@
                     item.setParent(otherItem);
                     otherItem.x = 20;
                     item.moveTo(0, 0);
-                    equal(item.getGlobalPath()[0].x, 20, "Parent object's spatial attributes manipulate the global position of vertices");
+                    equal(item._getGlobalPath()[0].x, 20, "Parent object's spatial attributes manipulate the global position of vertices");
                     item.setPath([]);
                     item.paths = [[]];
                     otherItem.x = 0;
@@ -52,23 +52,23 @@
                         matrix = new Matrix("My Matrix"),
                         otherMatrix = new Matrix("Not My Matrix");
                     item.addBone(matrix);
-                    notEqual(item.bones["My Matrix"], undefined, "Matrix can be successfully added");
+                    notEqual(item.boneMatrices, undefined, "Matrix can be successfully added");
 
                     item.setBoneSegments(matrix, [1, 2, 3]);
-                    deepEqual(item.bones["My Matrix"], [1, 2, 3], "Vertices can be put under a Matrix's control");
+                    deepEqual(item._bones["My Matrix"], [1, 2, 3], "Vertices can be put under a Matrix's control");
                     equal(item.setBoneSegments(otherMatrix, [1, 2, 3]), false, "A foreign Matrix cannot have control over a CartoonItem's vertices");
 
                     item.setBoneSegments(matrix, []);
 
                     item.beginBone(matrix);
                     item.moveTo(10, 10);
-                    deepEqual(item.bones["My Matrix"], [0], "Vertices automatically added to the current bone");
+                    deepEqual(item._bones["My Matrix"], [0], "Vertices automatically added to the current bone");
                     item.endBone();
                     item.lineTo(-10, 10);
-                    deepEqual(item.bones["My Matrix"], [0], "Vertices no longer automatically added after CartoonItem.endBone() called");
+                    deepEqual(item._bones["My Matrix"], [0], "Vertices no longer automatically added after CartoonItem.endBone() called");
 
                     matrix.x = 10;
-                    equal(item.getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
+                    equal(item._getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
                 });
                 test("CartoonItem paths", function () {
                     var otherItem = new CartoonItem("His Item");
@@ -98,15 +98,15 @@
                     equal(otherItem.getPath()[7].radius, 10, "The first vertex has an attribute 'radius', with the expected value");
 
                     otherItem.lineWidthFor(3);
-                    equal(otherItem.pathAttrs[0].lineWidth, 3, "Can set line width for individual paths");
+                    equal(otherItem._pathAttrs[0].lineWidth, 3, "Can set line width for individual paths");
                     otherItem.strokeFor("#343434");
-                    equal(otherItem.pathAttrs[0].strokeStyle, "#343434", "Can set stroke for individual paths");
+                    equal(otherItem._pathAttrs[0].strokeStyle, "#343434", "Can set stroke for individual paths");
                     otherItem.fillFor("rgb(0,0,0)");
-                    equal(otherItem.pathAttrs[0].fillStyle, "rgb(0,0,0)", "Can set fill for individual paths");
+                    equal(otherItem._pathAttrs[0].fillStyle, "rgb(0,0,0)", "Can set fill for individual paths");
 
                     otherItem.endPath();
-                    equal(otherItem.currentPath, 1, "CartoonItem.endPath() ends creation of current path")
-                    equal(otherItem.paths.length, 2, "CartoonItem.endPath() prepares for new creating new path");
+                    equal(otherItem._currentPath, 1, "CartoonItem.endPath() ends creation of current path")
+                    equal(otherItem._paths.length, 2, "CartoonItem.endPath() prepares for new creating new path");
                 });
 
                 module("Matrix tests");
@@ -140,7 +140,6 @@
                     equal(canvas.canvas.parentNode.id, "qunit-fixture", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
 
                     canvas.addItem(item);
-                    equal(canvas.items["My Item"], item, "CartoonCanvases can hold CartoonItems");
                     equal(canvas.getItem(item.name), item, "CartoonItems can be referenced by name when they are in a CartoonCanvas");
                     canvas.removeItem(item.name);
                     equal(canvas.getItem(item.name), undefined, "CartoonItems can be removed entirely from a CartoonCanvas, using CartoonCanvas.removeItem()");

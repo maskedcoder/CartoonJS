@@ -34,33 +34,6 @@
     var canvases = 0;
 
     /**
-     * Creates a new CartoonCanvas
-     *
-     * @param element The parent element for the new canvas
-     * @param width The canvas width
-     * @param height The canvas height
-     *
-     * @return CartoonCanvas object
-     */
-    /* init = function (element, width, height) {
-        return new canvas(element, width, height);
-    };*/
-
-    /**
-     * Creates a new Background canvas
-     *
-     * @param element The parent element for the new canvas
-     * @param width The canvas width
-     * @param height The canvas height
-     *
-     * @return Background object
-     */
-    /*var background_init = function (element, width, height) {
-        return new background(element, width, height);
-    };*/
-
-
-    /**
      * CartoonCanvas initializer.
      * ([element || id], width, height)
      * 
@@ -109,9 +82,7 @@
         this.height = h;
         this.canvas = canvas;
 
-        this.items = {};
-        this.refreshOpts = 0;
-        this.background = "#fff";
+        this._items = {};
 
         canvas = null;
         el = null;
@@ -123,10 +94,10 @@
     canvas.prototype.draw = function () {
         var ctext = this.ctext;
         ctext.clearRect(0,0,this.width,this.height);
-        for (var name in this.items) {
-            if (this.items[name].visible) {
+        for (var name in this._items) {
+            if (this._items[name].visible) {
                 ctext.save();
-                this.items[name].draw(ctext);
+                this._items[name].draw(ctext);
                 ctext.restore();
             }
         }
@@ -138,7 +109,7 @@
      * @param item CartoonItem object
      */
     canvas.prototype.addItem = function (item) {
-        this.items[item.name] = item;
+        this._items[item.name] = item;
     };
 
     /**
@@ -147,7 +118,7 @@
      * @param name The name of the CartoonItem object to remove
      */
     canvas.prototype.removeItem = function (name) {
-        delete this.items[name];
+        delete this._items[name];
     };
 
     /**
@@ -156,7 +127,7 @@
      * @param name The name of the CartoonItem object
      */
     canvas.prototype.getItem = function (name) {
-        return this.items[name];
+        return this._items[name];
     };
 
     
@@ -224,17 +195,6 @@
     var objects = 0;
 
     /**
-     * Creates a new CartoonItem
-     *
-     * @param name The name for the new CartoonItem (optional)
-     *
-     * @return CartoonItem object
-     */
-    /*var init = function (name) {
-        return new item(name);
-    };*/
-
-    /**
      * CartoonItem initializer
      *
      * @param name The name for the new CartoonItem (optional)
@@ -242,7 +202,7 @@
      * @return new CartoonItem object
      */
     var item = function (name) {
-        this.path = [];
+        this._path = [];
         this.attrs = {
             fillStyle: "#000",
             font: "Arial",
@@ -271,12 +231,12 @@
         this.scale = 1;
         this.parent = null;
         this.name = name || "object_" + objects;
-        this.bones = {};
+        this._bones = {};
         this.boneMatrices = {};
-        this.buildingBone = false;
-        this.paths = [[]];
-        this.currentPath = 0;
-        this.pathAttrs = { "0": {} };
+        this._buildingBone = false;
+        this._paths = [[]];
+        this._currentPath = 0;
+        this._pathAttrs = { "0": {} };
         objects++;
     };
 
@@ -304,8 +264,8 @@
      */
     item.prototype.addBone = function (bone) {
         var name = bone.name;
-        if (this.bones[name] === undefined) {
-            this.bones[name] = [];
+        if (this._bones[name] === undefined) {
+            this._bones[name] = [];
             this.boneMatrices[name] = bone;
         }
         return this;
@@ -323,10 +283,10 @@
         if (typeof (bonename) != "string") {
             bonename = bonename.name;
         }
-        if (this.bones[bonename] === undefined) {
+        if (this._bones[bonename] === undefined) {
             return false;
         }
-        this.bones[bonename] = segmentlist;
+        this._bones[bonename] = segmentlist;
         return this;
     };
 
@@ -340,11 +300,11 @@
      */
     item.prototype.beginBone = function (bone) {
         var name = bone.name;
-        if (this.bones[name] === undefined) {
-            this.bones[name] = [];
+        if (this._bones[name] === undefined) {
+            this._bones[name] = [];
             this.boneMatrices[name] = bone;
         }
-        this.buildingBone = name;
+        this._buildingBone = name;
         return this;
     };
 
@@ -354,7 +314,7 @@
      * @return This CartoonItem
      */
     item.prototype.endBone = function () {
-        this.buildingBone = false;
+        this._buildingBone = false;
         return this;
     };
 
@@ -365,14 +325,14 @@
         for (var name in this.attrs) {
             scene[name] = this.attrs[name];
         }
-        var path = this.getGlobalPath(),
-            paths = this.paths,
+        var path = this._getGlobalPath(),
+            paths = this._paths,
             j = 0,
             jlength = paths.length,
             currentPoint = null,
             control1 = null,
             control2 = null,
-            pathAttrs = this.pathAttrs;
+            pathAttrs = this._pathAttrs;
         var pth, inc, length, i;
         for (; j < jlength; j++) {
             pth = paths[j];
@@ -437,8 +397,11 @@
 
     /**
      * Transforms the parent Canvas's Context2d into the CartoonItem's local Matrix
+     *
+     * @param ctext CanvasRenderingContext2d to transform
+     * @private
      */
-    item.prototype.getGlobal = function () {
+    item.prototype._getGlobal = function (ctext) {
         var matrices = [],
             currentMatrix = this;
         var originx, originy, scale, cx, cy, rotation, sign;
@@ -470,11 +433,12 @@
      * Recalculates the path into global coordinates
      *
      * @return List of vertices in global coordinates
+     * @private
      */
-    item.prototype.getGlobalPath = function () {
-        // getGlobal only transforms the scene context
+    item.prototype._getGlobalPath = function () {
+        // _getGlobal only transforms the scene context
         // getGlobalPath transforms (a copy of) the path itself.
-        var path = [].concat(this.getPath()),
+        var path = this.getPath(),
             i = 0,
             length = path.length,
             radius = 0,
@@ -499,7 +463,7 @@
             currentMatrix = currentMatrix.parent;
         }
 
-        for (var name in this.bones) {
+        for (var name in this._bones) {
             var bones = [],
                 currentBone = this.boneMatrices[name],
                 index = 0;
@@ -518,9 +482,9 @@
                 cy = currentBone.y;
                 scale = currentBone.scale;
                 rotation = currentBone.rotation;
-                olength = this.bones[name].length;
+                olength = this._bones[name].length;
                 for (i = 0; i < olength; i++) {
-                    index = this.bones[name][i];
+                    index = this._bones[name][i];
                     point = path[index];
                     newPoint = { "type": point.type, "radius": point.radius };
 
@@ -577,7 +541,7 @@
      * @return List of vertices
      */
     item.prototype.getPath = function () {
-        return this.path;
+        return [].concat(this._path);
     };
 
     /**
@@ -588,7 +552,7 @@
      * @return This CartoonItem
      */
     item.prototype.setPath = function (path) {
-        this.path = path;
+        this._path = path;
         return this;
     };
 
@@ -605,13 +569,13 @@
      * @return This CartoonItem
      */
     item.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
-        this.path.push({ "type": "bezierCurve", "x": x, "y": y });
-        this.path.push({ "type": "control1", "x": cx1, "y": cy1 });
-        var nLength = this.path.push({ "type": "control2", "x": cx2, "y": cy2 });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
+        this._path.push({ "type": "bezierCurve", "x": x, "y": y });
+        this._path.push({ "type": "control1", "x": cx1, "y": cy1 });
+        var nLength = this._path.push({ "type": "control2", "x": cx2, "y": cy2 });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 3, nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 3, nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -626,12 +590,12 @@
      * @return This CartoonItem
      */
     item.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
-        this.path.push({ "type": "quadraticCurve", "x": x, "y": y });
-        var nLength = this.path.push({ "type": "control1", "x": cpx, "y": cpy });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
+        this._path.push({ "type": "quadraticCurve", "x": x, "y": y });
+        var nLength = this._path.push({ "type": "control1", "x": cpx, "y": cpy });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -647,12 +611,12 @@
      * @return This CartoonItem
      */
     item.prototype.arcTo = function (x, y, x2, y2, radius) {
-        this.path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
-        var nLength = this.path.push({ "type": "control1", "x": x2, "y": y2 });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
+        this._path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
+        var nLength = this._path.push({ "type": "control1", "x": x2, "y": y2 });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -665,11 +629,11 @@
      * @return This CartoonItem
      */
     item.prototype.lineTo = function (x, y) {
-        var nLength = this.path.push({ "type": "line", "x": x, "y": y });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone].push(nLength - 1);
+        var nLength = this._path.push({ "type": "line", "x": x, "y": y });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone].push(nLength - 1);
         }
-        this.paths[this.currentPath].push(nLength - 1);
+        this._paths[this._currentPath].push(nLength - 1);
         return this;
     };
 
@@ -682,11 +646,11 @@
      * @return This CartoonItem
      */
     item.prototype.moveTo = function (x, y) {
-        var nLength = this.path.push({ "type": "move", "x": x, "y": y });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone].push(nLength - 1);
+        var nLength = this._path.push({ "type": "move", "x": x, "y": y });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone].push(nLength - 1);
         }
-        this.paths[this.currentPath].push(nLength - 1);
+        this._paths[this._currentPath].push(nLength - 1);
         return this;
     };
 
@@ -696,9 +660,9 @@
      * @return This CartoonItem
      */
     item.prototype.endPath = function () {
-        this.currentPath++;
-        this.pathAttrs[this.currentPath] = {};
-        this.paths.push([]);
+        this._currentPath++;
+        this._pathAttrs[this._currentPath] = {};
+        this._paths.push([]);
         return this;
     };
 
@@ -710,7 +674,7 @@
      * @return This CartoonItem
      */
     item.prototype.fillFor = function (value) {
-        this.pathAttrs[this.currentPath].fillStyle = value;
+        this._pathAttrs[this._currentPath].fillStyle = value;
         return this;
     };
 
@@ -722,7 +686,7 @@
      * @return This CartoonItem
      */
     item.prototype.strokeFor = function (value) {
-        this.pathAttrs[this.currentPath].strokeStyle = value;
+        this._pathAttrs[this._currentPath].strokeStyle = value;
         return this;
     };
 
@@ -734,7 +698,7 @@
      * @return This CartoonItem
      */
     item.prototype.lineWidthFor = function (value) {
-        this.pathAttrs[this.currentPath].lineWidth = value;
+        this._pathAttrs[this._currentPath].lineWidth = value;
         return this;
     };
 
@@ -785,17 +749,6 @@
 
     // Tally of matrices to generate id's
     var matrices = 0;
-
-    /**
-     * Creates a new Matrix with the given name
-     *
-     * @param name Name for the new Matrix (optional)
-     *
-     * @return The new Matrix object
-     */
-    /*var matrix_init = function (name) {
-        return new matrix(name);
-    };*/
 
     /**
      * Matrix initializer
@@ -875,17 +828,6 @@
         DEBUG = false; // Whether or not to log the frames per second of the animation
 
     /**
-     * Creates a new Animation
-     *
-     * @param element An element to contain the controls (optional)
-     *
-     * @return The new Animation
-     */
-    /*var init = function (element) {
-        return new animation(element);
-    };*/
-
-    /**
      * Animation initializer. If makeControls is true, an interface will be
      * generated and placed inside whatever element has an id 'animation-controls-container'
      *
@@ -916,68 +858,6 @@
      */
     animation.prototype.createControls = function () {
         return new controls(this);
-    };
-    
-    /**
-     * Gets a given CartoonItem's transformation for a given time
-     *
-     * @param item CartoonItem
-     * @param time Number
-     */
-    animation.prototype.itemTransformForTime = function (item, time) {
-        var t = null,
-            attr = {},
-            name = null,
-            frame = null;
-        for (t in this.timeline) {
-            frame = this.timeline[t];
-            if (frame[name] !== undefined) {
-                for (name in frame[name]) {
-                    attr[name] = frame[name];
-                }
-            }
-            if (time == t) {
-                break;
-            }
-        }
-        return attr;
-    };
-    
-    /**
-     * Adds a key frame, wherein the item has a specific value for a specific value at the specific time
-     *
-     * @param item CartoonItem or name of a CartoonItem
-     * @param time Time during the animation
-     * @param attr Name of a CartoonItem attribute
-     * @param val The value for that attribute
-     */
-    animation.prototype.addKeyFrame = function (item, time, attr, val) {
-        // item -> object or name, time -> int, attr -> name of item attribute,
-        // val -> value for said attribute at said time
-        // Timeline will be:
-        // {item:{attr:{time:val, keys:[list_of_times]}}}
-        if (time > this.lastframe) {
-            this.lastframe = time;
-        }
-        if (typeof(item) != "string") {
-            item = item.name;
-        }
-        if (this.timeline[item] === undefined) {
-            this.timeline[item] = {};
-        }
-        if (this.timeline[item][attr] === undefined) {
-            this.timeline[item][attr] = {
-                "keys": []
-            };
-        }
-        this.timeline[item][attr][time] = val;
-        if (this.timeline[item][attr].keys.indexOf(time) == -1) {
-            this.timeline[item][attr].keys.push(time);
-        }
-        if (this.timeline[item][attr][0] === undefined) {
-            this.timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
-            this.timeline[item][attr].keys.push(0);
-        }
     };
     
     /**
@@ -1041,7 +921,7 @@
         if (this.audio) {
             this.audio.play();
         }
-        this.stepAnimation();
+        this._step();
     };
 
     /**
@@ -1072,7 +952,7 @@
             this.audio.pause();
             this.audio.currentTime = 0;
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -1094,7 +974,7 @@
         if (this.audio) {
             this.audio.play();
         }
-        this.stepAnimation();
+        this._step();
     };
 
     /**
@@ -1114,7 +994,7 @@
         if (this.status != "playing") {
             this.status = "paused";
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -1132,7 +1012,7 @@
         if (this.status != "playing") {
             this.status = "paused";
         }
-        this.stepAnimation(true);
+        this._step(true);
     };
 
     /**
@@ -1140,8 +1020,9 @@
      * If a value is given for update, the current time is recalculated, but the function will not ask to be called again
      *
      * @param update Bool
+     * @private
      */
-    animation.prototype.stepAnimation = function(update) {
+    animation.prototype._step = function(update) {
         if (update) {
             this.time = +new Date() - this.startTime;
         } else {
@@ -1190,7 +1071,7 @@
         if (time < this.lastframe) {
             (function (anim) {
                 requestAnimationFrame(function () {
-                    anim.stepAnimation();
+                    anim._step();
                 });
             })(this);
         } else {
@@ -1344,13 +1225,13 @@
     var AnimationScene = function (scene, background) {
         this.background = background;
         this.scene = scene;
-        this.timeline = {};
-        this.immediateTimeline = {};
-        this.subAnimations = [];
+        this._timeline = {};
+        this._immediateTimeline = {};
+        this._subAnimations = [];
         this.lastframe = -1;
-        this.drawnYet = false;
+        this._drawnYet = false;
         this.hidden = false;
-        this.MYLASTFRAME = -1;
+        this._MYLASTFRAME = -1;
     };
 
     /**
@@ -1383,9 +1264,9 @@
      * @param update Whether we are jumping to a specific place
      */
     AnimationScene.prototype.stepAnimation = function (time, update) {
-        this.drawnYet = true;
+        this._drawnYet = true;
         var i = 0,
-            anims = this.subAnimations,
+            anims = this._subAnimations,
             length = anims.length,
             current = null;
         for ( ;i < length;i++) {
@@ -1396,10 +1277,10 @@
         }
         var kframe, items, attr, item;
         var klist = [];
-        for (kframe in this.immediateTimeline) {
+        for (kframe in this._immediateTimeline) {
             klist.push(kframe);
-            if ((this.MYLASTFRAME < kframe && time >= kframe) || (time < this.MYLASTFRAME && time == kframe)) {
-                items = this.immediateTimeline[kframe];
+            if ((this._MYLASTFRAME < kframe && time >= kframe) || (time < this._MYLASTFRAME && time == kframe)) {
+                items = this._immediateTimeline[kframe];
                 for (item in items) {
                     this.scene.getItem(item).attr(items[item]);
                 }
@@ -1410,7 +1291,7 @@
             for (i = 0, length = klist.length;i < length;i++) {
                 kframe = klist[i];
                 if (kframe <= time) {
-                    items = this.immediateTimeline[kframe];
+                    items = this._immediateTimeline[kframe];
                     for (item in items) {
                         this.scene.getItem(item).attr(items[item]);
                     }
@@ -1419,7 +1300,7 @@
                 }
             }
         }
-        this.MYLASTFRAME = time;
+        this._MYLASTFRAME = time;
         this.scene.draw();
     };
 
@@ -1442,21 +1323,21 @@
         if (typeof(item) != "string") {
             item = item.name;
         }
-        if (this.timeline[item] === undefined) {
-            this.timeline[item] = {};
+        if (this._timeline[item] === undefined) {
+            this._timeline[item] = {};
         }
-        if (this.timeline[item][attr] === undefined) {
-            this.timeline[item][attr] = {
+        if (this._timeline[item][attr] === undefined) {
+            this._timeline[item][attr] = {
                 "keys": []
             };
         }
-        this.timeline[item][attr][time] = val;
-        if (this.timeline[item][attr].keys.indexOf(time) == -1) {
-            this.timeline[item][attr].keys.push(time);
+        this._timeline[item][attr][time] = val;
+        if (this._timeline[item][attr].keys.indexOf(time) == -1) {
+            this._timeline[item][attr].keys.push(time);
         }
-        if (this.timeline[item][attr][0] === undefined) {
-            this.timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
-            this.timeline[item][attr].keys.push(0);
+        if (this._timeline[item][attr][0] === undefined) {
+            this._timeline[item][attr][0] = this.scene.getItem(item).attr(attr);
+            this._timeline[item][attr].keys.push(0);
         }
     };
 
@@ -1480,19 +1361,19 @@
             item = item.name;
         }
 
-        if (this.immediateTimeline[time] === undefined) {
-            this.immediateTimeline[time] = {};
+        if (this._immediateTimeline[time] === undefined) {
+            this._immediateTimeline[time] = {};
         }
-        if (this.immediateTimeline[time][item] === undefined) {
-            this.immediateTimeline[time][item] = {
+        if (this._immediateTimeline[time][item] === undefined) {
+            this._immediateTimeline[time][item] = {
             };
         }
-        this.immediateTimeline[time][item][attr] = val;
-        if (!this.immediateTimeline[0] || !this.immediateTimeline[0][item] || !this.immediateTimeline[0][item][attr]) {
+        this._immediateTimeline[time][item][attr] = val;
+        if (!this._immediateTimeline[0] || !this._immediateTimeline[0][item] || !this._immediateTimeline[0][item][attr]) {
             var tmp = {};
             tmp[item] = {};
             tmp[item][attr] = this.scene.getItem(item).attr(attr);
-            this.immediateTimeline[0] = tmp;
+            this._immediateTimeline[0] = tmp;
         }
     };
 
@@ -1501,13 +1382,13 @@
      */
     AnimationScene.prototype.compile = function () {
         var sort = function (a, b) { return a - b; };
-        this.MYLASTFRAME = -1;
-        this.drawnYet = false;
-        if (this.subAnimations.length === 0) {
+        this._MYLASTFRAME = -1;
+        this._drawnYet = false;
+        if (this._subAnimations.length === 0) {
             var item, time, attr, keyIncr, numKeys,
                 itemName, timeName, attrName, prevTime;
-            for (itemName in this.timeline) {
-                item = this.timeline[itemName];
+            for (itemName in this._timeline) {
+                item = this._timeline[itemName];
                 for (attrName in item) {
                     attr = item[attrName];
                     attr.keys.sort(sort);
@@ -1515,7 +1396,7 @@
                         timeName = attr.keys[keyIncr];
                         if (keyIncr > 0) {
                             prevTime = attr.keys[keyIncr - 1];
-                            this.subAnimations.push(
+                            this._subAnimations.push(
                                 new subAnimation(
                                     this.scene.getItem(itemName),
                                     attrName, attr[prevTime],

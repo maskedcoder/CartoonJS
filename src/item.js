@@ -2,17 +2,6 @@
     var objects = 0;
 
     /**
-     * Creates a new CartoonItem
-     *
-     * @param name The name for the new CartoonItem (optional)
-     *
-     * @return CartoonItem object
-     */
-    /*var init = function (name) {
-        return new item(name);
-    };*/
-
-    /**
      * CartoonItem initializer
      *
      * @param name The name for the new CartoonItem (optional)
@@ -20,7 +9,7 @@
      * @return new CartoonItem object
      */
     var item = function (name) {
-        this.path = [];
+        this._path = [];
         this.attrs = {
             fillStyle: "#000",
             font: "Arial",
@@ -49,12 +38,12 @@
         this.scale = 1;
         this.parent = null;
         this.name = name || "object_" + objects;
-        this.bones = {};
+        this._bones = {};
         this.boneMatrices = {};
-        this.buildingBone = false;
-        this.paths = [[]];
-        this.currentPath = 0;
-        this.pathAttrs = { "0": {} };
+        this._buildingBone = false;
+        this._paths = [[]];
+        this._currentPath = 0;
+        this._pathAttrs = { "0": {} };
         objects++;
     };
 
@@ -82,8 +71,8 @@
      */
     item.prototype.addBone = function (bone) {
         var name = bone.name;
-        if (this.bones[name] === undefined) {
-            this.bones[name] = [];
+        if (this._bones[name] === undefined) {
+            this._bones[name] = [];
             this.boneMatrices[name] = bone;
         }
         return this;
@@ -101,10 +90,10 @@
         if (typeof (bonename) != "string") {
             bonename = bonename.name;
         }
-        if (this.bones[bonename] === undefined) {
+        if (this._bones[bonename] === undefined) {
             return false;
         }
-        this.bones[bonename] = segmentlist;
+        this._bones[bonename] = segmentlist;
         return this;
     };
 
@@ -118,11 +107,11 @@
      */
     item.prototype.beginBone = function (bone) {
         var name = bone.name;
-        if (this.bones[name] === undefined) {
-            this.bones[name] = [];
+        if (this._bones[name] === undefined) {
+            this._bones[name] = [];
             this.boneMatrices[name] = bone;
         }
-        this.buildingBone = name;
+        this._buildingBone = name;
         return this;
     };
 
@@ -132,7 +121,7 @@
      * @return This CartoonItem
      */
     item.prototype.endBone = function () {
-        this.buildingBone = false;
+        this._buildingBone = false;
         return this;
     };
 
@@ -143,14 +132,14 @@
         for (var name in this.attrs) {
             scene[name] = this.attrs[name];
         }
-        var path = this.getGlobalPath(),
-            paths = this.paths,
+        var path = this._getGlobalPath(),
+            paths = this._paths,
             j = 0,
             jlength = paths.length,
             currentPoint = null,
             control1 = null,
             control2 = null,
-            pathAttrs = this.pathAttrs;
+            pathAttrs = this._pathAttrs;
         var pth, inc, length, i;
         for (; j < jlength; j++) {
             pth = paths[j];
@@ -215,8 +204,11 @@
 
     /**
      * Transforms the parent Canvas's Context2d into the CartoonItem's local Matrix
+     *
+     * @param ctext CanvasRenderingContext2d to transform
+     * @private
      */
-    item.prototype.getGlobal = function () {
+    item.prototype._getGlobal = function (ctext) {
         var matrices = [],
             currentMatrix = this;
         var originx, originy, scale, cx, cy, rotation, sign;
@@ -248,11 +240,12 @@
      * Recalculates the path into global coordinates
      *
      * @return List of vertices in global coordinates
+     * @private
      */
-    item.prototype.getGlobalPath = function () {
-        // getGlobal only transforms the scene context
+    item.prototype._getGlobalPath = function () {
+        // _getGlobal only transforms the scene context
         // getGlobalPath transforms (a copy of) the path itself.
-        var path = [].concat(this.getPath()),
+        var path = this.getPath(),
             i = 0,
             length = path.length,
             radius = 0,
@@ -277,7 +270,7 @@
             currentMatrix = currentMatrix.parent;
         }
 
-        for (var name in this.bones) {
+        for (var name in this._bones) {
             var bones = [],
                 currentBone = this.boneMatrices[name],
                 index = 0;
@@ -296,9 +289,9 @@
                 cy = currentBone.y;
                 scale = currentBone.scale;
                 rotation = currentBone.rotation;
-                olength = this.bones[name].length;
+                olength = this._bones[name].length;
                 for (i = 0; i < olength; i++) {
-                    index = this.bones[name][i];
+                    index = this._bones[name][i];
                     point = path[index];
                     newPoint = { "type": point.type, "radius": point.radius };
 
@@ -355,7 +348,7 @@
      * @return List of vertices
      */
     item.prototype.getPath = function () {
-        return this.path;
+        return [].concat(this._path);
     };
 
     /**
@@ -366,7 +359,7 @@
      * @return This CartoonItem
      */
     item.prototype.setPath = function (path) {
-        this.path = path;
+        this._path = path;
         return this;
     };
 
@@ -383,13 +376,13 @@
      * @return This CartoonItem
      */
     item.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
-        this.path.push({ "type": "bezierCurve", "x": x, "y": y });
-        this.path.push({ "type": "control1", "x": cx1, "y": cy1 });
-        var nLength = this.path.push({ "type": "control2", "x": cx2, "y": cy2 });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
+        this._path.push({ "type": "bezierCurve", "x": x, "y": y });
+        this._path.push({ "type": "control1", "x": cx1, "y": cy1 });
+        var nLength = this._path.push({ "type": "control2", "x": cx2, "y": cy2 });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 3, nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 3, nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -404,12 +397,12 @@
      * @return This CartoonItem
      */
     item.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
-        this.path.push({ "type": "quadraticCurve", "x": x, "y": y });
-        var nLength = this.path.push({ "type": "control1", "x": cpx, "y": cpy });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
+        this._path.push({ "type": "quadraticCurve", "x": x, "y": y });
+        var nLength = this._path.push({ "type": "control1", "x": cpx, "y": cpy });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -425,12 +418,12 @@
      * @return This CartoonItem
      */
     item.prototype.arcTo = function (x, y, x2, y2, radius) {
-        this.path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
-        var nLength = this.path.push({ "type": "control1", "x": x2, "y": y2 });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone] = this.bones[this.buildingBone].concat([nLength - 2, nLength - 1]);
+        this._path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
+        var nLength = this._path.push({ "type": "control1", "x": x2, "y": y2 });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
-        this.paths[this.currentPath] = this.paths[this.currentPath].concat([nLength - 2, nLength - 1]);
+        this._paths[this._currentPath] = this._paths[this._currentPath].concat([nLength - 2, nLength - 1]);
         return this;
     };
 
@@ -443,11 +436,11 @@
      * @return This CartoonItem
      */
     item.prototype.lineTo = function (x, y) {
-        var nLength = this.path.push({ "type": "line", "x": x, "y": y });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone].push(nLength - 1);
+        var nLength = this._path.push({ "type": "line", "x": x, "y": y });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone].push(nLength - 1);
         }
-        this.paths[this.currentPath].push(nLength - 1);
+        this._paths[this._currentPath].push(nLength - 1);
         return this;
     };
 
@@ -460,11 +453,11 @@
      * @return This CartoonItem
      */
     item.prototype.moveTo = function (x, y) {
-        var nLength = this.path.push({ "type": "move", "x": x, "y": y });
-        if (this.buildingBone) {
-            this.bones[this.buildingBone].push(nLength - 1);
+        var nLength = this._path.push({ "type": "move", "x": x, "y": y });
+        if (this._buildingBone) {
+            this._bones[this._buildingBone].push(nLength - 1);
         }
-        this.paths[this.currentPath].push(nLength - 1);
+        this._paths[this._currentPath].push(nLength - 1);
         return this;
     };
 
@@ -474,9 +467,9 @@
      * @return This CartoonItem
      */
     item.prototype.endPath = function () {
-        this.currentPath++;
-        this.pathAttrs[this.currentPath] = {};
-        this.paths.push([]);
+        this._currentPath++;
+        this._pathAttrs[this._currentPath] = {};
+        this._paths.push([]);
         return this;
     };
 
@@ -488,7 +481,7 @@
      * @return This CartoonItem
      */
     item.prototype.fillFor = function (value) {
-        this.pathAttrs[this.currentPath].fillStyle = value;
+        this._pathAttrs[this._currentPath].fillStyle = value;
         return this;
     };
 
@@ -500,7 +493,7 @@
      * @return This CartoonItem
      */
     item.prototype.strokeFor = function (value) {
-        this.pathAttrs[this.currentPath].strokeStyle = value;
+        this._pathAttrs[this._currentPath].strokeStyle = value;
         return this;
     };
 
@@ -512,7 +505,7 @@
      * @return This CartoonItem
      */
     item.prototype.lineWidthFor = function (value) {
-        this.pathAttrs[this.currentPath].lineWidth = value;
+        this._pathAttrs[this._currentPath].lineWidth = value;
         return this;
     };
 
@@ -563,17 +556,6 @@
 
     // Tally of matrices to generate id's
     var matrices = 0;
-
-    /**
-     * Creates a new Matrix with the given name
-     *
-     * @param name Name for the new Matrix (optional)
-     *
-     * @return The new Matrix object
-     */
-    /*var matrix_init = function (name) {
-        return new matrix(name);
-    };*/
 
     /**
      * Matrix initializer

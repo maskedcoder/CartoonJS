@@ -70,11 +70,9 @@ Provides an interface for the HTML5 canvas. Each CartoonCanvas can hold multiple
 
 #### CartoonCanvas Properties
 
-- `background` : The background color or a Background object that will be drawn every refresh
 - `canvas` : The canvas element that will be drawn on
 - `ctext` : The CanvasRenderingContext2D for the canvas element
 - `height` : The height of the canvas
-- `items` : A map of all contained CartoonItems by their names
 - `width` : The width of the canvas
 
 #### CartoonCanvas Methods
@@ -84,7 +82,7 @@ Provides an interface for the HTML5 canvas. Each CartoonCanvas can hold multiple
 Creates an empty CartoonCanvas.
 
 - `element` : HTML element or an id to select. If the element is not a canvas, a new canvas element will be created and nested inside
--  `width` : (default: `500`) The width of the canvas
+- `width` : (default: `500`) The width of the canvas
 - `height` : (default: `300`) The height of the canvas
 
 ##### CartoonCanvas.addItem(item) -> null
@@ -160,17 +158,11 @@ One CartoonItem can be the parent of another, which means that the parent's loca
 #### CartoonItem Properties
 
 - `attrs` : An object that stores custom drawing data, which will be applied to the canvas rendering context before drawing
-- `bones` : An object telling which matrices can act on which points
 - `boneMatrices` : An object listing all of the matrices that can act on this CartoonItem
-- `buildingBone` : A pointer to the Matrix that is being given control of every new point, or `false` if there is none
 - `closePath` : (default: `true`) Whether or not to close the path
-- `currentPath` : The index of the sub-path that is currently being created
 - `name` : The name of the CartoonItem. Don't reuse names.
 - `originX` : (default: `0`) The x component of the point that the CartoonItem will be rotated around
 - `originY` : (default: `0`) The y component of the point that the CartoonItem will be rotated around
-- `path` : The list of points that will be used to draw the CartoonItem on a canvas
-- `paths` : A list of sub-paths
-- `pathAttrs` : An object storing deviations from `attrs` for each sub-path
 - `parent` : A reference to the parent CartoonItem, if any
 - `reverse` : Whether or not to draw the path with left and right swapped
 - `rotation` : (default: `0`) The rotation of the CartoonItem
@@ -274,16 +266,6 @@ Draws the CartoonItem, using the CanvasRenderingContext2D represented by `scene`
 In order to create a custom item for the CartoonCanvas, this method can be overwritten.
 
 - `scene` : A CanvasRenderingContext2D
-
-##### CartoonItem.getGlobal(scene) -> null
-
-Transforms the CanvasRenderingContext2D represented by `scene` into local coordinates. This gives an alternative to manually recalculating all of the points in this CartoonItem's path into global coordinates. Transforming the CanvasRenderingContext2D is generally a slower way, so it is not recommended.
-
-- `scene` : A CanvasRenderingContext2D
-
-##### CartoonItem.getGlobalPath() -> Array
-
-Calculates the position of all the points in this CartoonItem's path in global coordinates, based on any parent items and any Matrix objects that have control of vertices. The recalculated path is returned.
 
 ##### CartoonItem.getPath() -> Array
 
@@ -412,52 +394,6 @@ The attributes availible for getting or setting are `x`, `y`, `rotation`, `scale
 - `name` : The name of an attribute
 - `value` : The new value for an attribute
 
-### Group
-
-Represents a collection of CartoonItems which can be animated together.
-
-#### Group Properties
-
-- `name` : A string that uniquely identifies the Group
-- `objects` : A list of CartoonItems that are members of the Group
-- `rotation` : A value to add to the rotation each of the CartoonItems
-- `scale` : A value to add to the scale each of the CartoonItems
-- `scene` : The CartoonScene that the CartoonItems belong to
-- `x` : A value to add to the horizontal position each of the CartoonItems
-- `y` : A value to add to the vertical position each of the CartoonItems
-
-#### Group Methods
-
-##### Group(scene) -> new Group object
-
-Creates a Group that will contain objects to be drawn using the CanvasRenderingContext2D `scene`.
-
-- `scene` : A CanvasRenderingContext2D to use for drawing objects
-
-##### Group.addItem(item) -> null
-
-Adds a CartoonItem to the Group.
-
-- `item` : A CartoonItem
-
-##### Group.draw([scene]) -> null
-
-Draws all of the CartoonItems in the Group, using the CanvasRenderingContext2D supplied, or the one stored in `this.scene` if no context is given.
-
-- `scene` : A CanvasRenderingContext2D to draw the CartoonItems on
-
-##### Group.attr(object) -> bool
-##### Group.attr(name, value) -> bool
-##### Group.attr(name) -> value
-
-Gets or sets the Group's attributes. If an object is given, the keys and values will be fed into this function, and return true if all were successful. If a name and value are given, the function will attempt to match the name up to an attribute and set it, returning true for success and false for failure. If just a name is given, the corresponding value for the attribute by that name will be returned, or false if there is no such attribute.
-
-The attributes availible for getting or setting are `x`, `y`, `rotation`, `scale`.
-
-- `object` : An object with key/value pairs corresponding to this Group's attributes.
-- `name` : The name of an attribute
-- `value` : The new value for an attribute
-
 ### Animation
 
 Provides an interface for creating and playing an animation.
@@ -489,22 +425,6 @@ Creates a new animation. If `makeControls` is `true`, the controls for the anima
 ##### Animation.createControls() -> new Controls object
 
 Builds the controls for the animation inside the element specified. The controls will be placed inside the element with the id 'animation-controls-container'.
-
-##### Animation.itemTransformForTime(item, time) -> object
-
-Gets the values for all of the animated properties of the given CartoonItem at the given time. The values are returned inside an object.
-
-- `item` : A CartoonItem
-- `time` : A valid time during the animation
-
-##### Animation.addKeyFrame(item, time, attr, val) -> null
-
-Adds a key frame to `this.timeline` wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the CartoonItem is not the current value, and no other key frames for that attribute on that CartoonItem have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
-
-- `item` : A CartoonItem or the name of a CartoonItem
-- `time` : The time for the key frame
-- `attr` : A CartoonItem [attribute](#cartoonitem-properties) to be animated
-- `val` : The value of the CartoonItem attribute
 
 ##### Animation.addScene(scene, time) -> null
 
@@ -549,12 +469,6 @@ Moves the Animation to the given time and draws a frame for that time. The state
 
 Sends the Animation backward 15 seconds, or to the start, if the current time is less than 15 seconds.
 
-##### Animation.stepAnimation([update]) -> null
-
-Draws the next frame in the animation and schedules itself to be called again, unless the animation is finished, or `this.state` is set to `ready` or `paused`, or if `update` is `true`. If `update` is `true`, the current time will also be recalculated. If the global `DEBUG` is set, the frames per second will be calculated for the last two frames and logged in the console.
-
-- `update` : Bool whether or not the call is a refresh that is not a scheduled part of the Animation playback (e.g. if the Animation is getting moved to a totally different place in the playback and there needs to be an immediate redraw)
-
 ### AnimationScene
 
 Represents a scene during an Animation. Each scene gets to keep track of key frames. The Animation checks each step to see what AnimationScene is active; the active AnimationScene checks each step to see what CartoonItems are changing, and these changes finally get drawn.
@@ -563,13 +477,8 @@ Represents a scene during an Animation. Each scene gets to keep track of key fra
 
 - `background` : Background object to show or hide when the scene changes
 - `scene` : The CartoonCanvas on which the action takes place
-- `timeline` : A rather complicated object which holds the key frame data, which will later be compiled
-- `immediateTimeline` : An object containing a list of CartoonItem transitions which will take place instantly
-- `subAnimations` : A list of SubAnimations which will be animated at different points during the AnimationScene playback
 - `lastframe` : The time of the last frame in the AnimationScene
-- `drawnYet` : Whether or not any frames for this AnimationScene have been drawn
 - `hidden` : Whether or not the AnimationScene's corresponding CartoonCanvas and Background are hidden
-- `MYLASTFRAME` : The time of the most recently drawn frame
 
 #### AnimationScene Methods
 
@@ -582,11 +491,11 @@ Creates a new AnimationScene.
 
 ##### AnimationScene.hide() -> null
 
-Hides the HTML canvases that are controlled by the CanvasScene in `this.scene` and the Background (if any) in `this.background`.
+Hides the HTML canvases that are controlled by the CanvasScene in `this.scene` and the Background (if any) in `this.background`. There is no real need to use this function. The CartoonAnimation will automatically make AnimationScenes appear and disappear.
 
 ##### AnimationScene.show() -> null
 
-Makes the HTML canvases that are controlled by the CanvasScene in `this.scene` and the Background (if any) in `this.background appear.
+Makes the HTML canvases that are controlled by the CanvasScene in `this.scene` and the Background (if any) in `this.background appear. There is no real need to use this function. The CartoonAnimation will automatically make AnimationScenes appear and disappear.
 
 ##### AnimationScene.stepAnimation(time, [update]) -> null
 
@@ -597,7 +506,7 @@ Draws the next frame in the sequence corresponding to this AnimationScene. First
 
 ##### AnimationScene.addKeyFrame(item, time, attr, val) -> null
 
-Adds a key frame to `this.timeline` wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the CartoonItem is not the current value, and no other key frames for that attribute on that CartoonItem have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
+Adds a key frame wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the CartoonItem is not the current value, and no other key frames for that attribute on that CartoonItem have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
 
 - `item` : A CartoonItem or the name of a CartoonItem
 - `time` : The time for the key frame
@@ -606,7 +515,7 @@ Adds a key frame to `this.timeline` wherein the given CartoonItem has the attrib
 
 ##### AnimationScene.addAttrChange(item, time, attr, val) -> null
 
-Adds a key frame to `this.immediateTimeline` wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. The Immediate Timeline is for CartoonItem transformations that will take place instantaneously, with no transition between one value and the next. This is meant to be used for boolean CartoonItem attributes, like `visible` or `reverse`. When the user triggers a jump from one time in the animation to a different time, no matter how small the jump, all of the instantaneous transformations that are to happen before the new time *will* be run through, whether or not they are necessary.
+Adds a key frame wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. This is for CartoonItem transformations that will take place instantaneously, with no transition between one value and the next. This is meant to be used for boolean CartoonItem attributes, like `visible` or `reverse`. When the user triggers a jump from one time in the animation to a different time, no matter how small the jump, all of the instantaneous transformations that are to happen before the new time *will* be run through, whether or not they are necessary.
 
 - `item` : A CartoonItem or the name of a CartoonItem
 - `time` : The time for the key frame
@@ -615,7 +524,7 @@ Adds a key frame to `this.immediateTimeline` wherein the given CartoonItem has t
 
 ##### AnimationScene.compile() -> null
 
-Prepares the AnimationScene by compiling `this.timeline` into a series of SubAnimations which have low-level control over the actual animating. These SubAnimations are stored in `this.subAnimations`.
+Prepares the AnimationScene by compiling `this._timeline` into a series of SubAnimations which have low-level control over the actual animating. These SubAnimations are stored in `this._subAnimations`. There is no real need to use this function. The CartoonAnimation will automatically compile all the AnimationScenes before playing.
 
 ### Controls
 
@@ -647,34 +556,6 @@ Updates the clock to display the current time, and moves the progress meter. The
 Updates the state of the play/pause button. If the Animation is playing, the button has a pause symbol. Otherwise, a play symbol is displayed.
 
 - `state` : The state of the Animation, either `play`, `ready`, or `pause`
-
-### SubAnimation
-
-SubAnimations do the actual transforming of CartoonItems during the Animation. Each SubAnimation controls exactly one transition for one attribute for one CartoonItem. SubAnimations are generated automatically when AnimationScenes are compiled.
-
-#### SubAnimation Properties
-
-- `object` : The CartoonItem that will be controlled during the SubAnimation
-- `startState` : The value of the attribute in `type` at the beginning of the transition
-- `endState` : The value that the attribute in `type` should have at the end of the transition
-- `begin` : The time that the SubAnimation will begin playing
-- `end` : The time that the SubAnimation will stop playing
-- `update` : A function which will provide an algorithm for changing the attribute, whether it is a numeric value, a path, or a color. This function is selected automatically based on the name of the attribute
-- `type` : The name of the attribute that will be transitioned
-
-#### SubAnimation Methods
-
-##### SubAnimation.isPlaying(time) -> bool
-
-Tells whether or not the SubAnimation should be playing at the time given.
-
-- `time` : An integer
-
-##### SubAnimation.transformForTime(time) -> null
-
-Transforms the CartoonItem's attribute to the appropriate value for the given time. The percentage completion of the SubAnimation is calculated, and then the function in `this.update` transforms the CartoonItem.
-
-- `time` : An integer representing a time during the SubAnimation
 
 ## Copyright and License
 
