@@ -32,8 +32,8 @@ background.draw = function () {
 };
 
 var legMatrix = new Matrix("legs"); // The leg bone
-var animal = new CartoonItem("animal"); // What kind? I'm not sure... Maybe a duck?
-// You have to add the bone to the CartoonItem first
+var animal = new CartoonPathItem("animal"); // What kind? I'm not sure... Maybe a duck?
+// You have to add the bone to the CartoonPathItem first
 animal.addBone(legMatrix);
 animal.moveTo(36, -49)
         .bezierCurveTo(-40,-2, 56,-19, -2,47)
@@ -69,7 +69,7 @@ var scene1 = new AnimationScene(canvas, background);
 
 // First hop:
 scene1.addKeyFrame(legMatrix, 200, "rotation", 45); // Moving the matrix moves the leg vertices
-// If you didn't notice, the rotational center is (0,0) in the CartoonItem's local coordinates
+// If you didn't notice, the rotational center is (0,0) in the CartoonPathItem's local coordinates
 // I could have played with originX and originY, but that gets complicated in a hurry
 scene1.addKeyFrame(legMatrix, 500, "rotation", 0);
 scene1.addKeyFrame(animal, 500, "y", 200);
@@ -128,10 +128,10 @@ var canvas2 = new CartoonCanvas("container");
 var scene2 = new AnimationScene(canvas2, background);
 // Reusing backgrounds? Is that even legal? Yup. I can even reuse canvases.
 // If I was feeling real wild, I would even reuse CartoonItems between canvases
-// (Mind you, in reusing CartoonItems, I would have to reset their positions every scene change to prevent unwanted jumps.
+// (Mind you, in reusing CartoonPathItems, I would have to reset their positions every scene change to prevent unwanted jumps.
 // Also, a stray number in a key frame for another scene could cause a little havok)
 
-var star = new CartoonItem("star")
+var star = new CartoonPathItem("star")
         .moveTo(10, -10)
         .lineTo(45, -10)
         .lineTo(18, 10)

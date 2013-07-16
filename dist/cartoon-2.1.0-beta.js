@@ -194,14 +194,107 @@
     // Tally of objects for generating id's
     var objects = 0;
 
+
     /**
-     * CartoonItem initializer
+     * AbstractCartoonItem initializer
+     * If no name is given, a unique name will be automatically generated
+     * All CartoonItems should inherit this class
      *
      * @param name The name for the new CartoonItem (optional)
      *
-     * @return new CartoonItem object
+     * @return new AbstractCartoonItem
      */
-    var item = function (name) {
+    var AbstractCartoonItem = function (name) {
+        this.name = name || "object_" + objects;
+        this.attrs = {};
+        this.reverse = false;
+        this.rotation = 0;
+        this.originX = 0;
+        this.originY = 0;
+        this.visible = true;
+        this.x = 0;
+        this.y = 0;
+        this.scale = 1;
+        this.parent = null;
+    };
+
+    /**
+     * Sets the AbstractCartoonItem's parent to the given AbstractCartoonItem
+     *
+     * @param p AbstractCartoonItem to be parent
+     *
+     * @return Bool success
+     */
+    AbstractCartoonItem.prototype.setParent = function (p) {
+        if (!(p instanceof AbstractCartoonItem) && (p !== null)) {
+            return false;
+        }
+        this.parent = p;
+        return true;
+    };
+
+    /**
+     * The vital function which does the actual drawing. Subclasses should overwrite this function.
+     * By default, this function only prints "Not implemented" to the console
+     *
+     * @ctext CanvasRenderingContext2d on which to draw the object
+     */
+    AbstractCartoonItem.draw = function (ctext) {
+        console.log("Not implemented");
+    };
+
+    /**
+     * Sets one or more AbstractCartoonItem attributes
+     * If a name is given but no value, the value of the attribute is returned
+     *
+     * @param name Name of an AbstractCartoonItem attribute or an object describing several attributes
+     * @param value The new value for the attribute (optional)
+     *
+     * @return Bool success
+     */
+    AbstractCartoonItem.prototype.attr = function (name, value) {
+        if (typeof (name) == "object") {
+            var success = true;
+            for (var n in name) {
+                success = success && this.attr(n, name[n]);
+            }
+            return success;
+        } else {
+            if (value === undefined) {
+                if (this.attrs[name] === undefined) {
+                    if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible", "originX", "originY"].indexOf(name) == -1) {
+                        return false;
+                    }
+                    return this[name];
+                }
+                return this.attrs[name];
+            } else {
+                if (this.attrs[name] === undefined) {
+                    if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible", "originX", "originY"].indexOf(name) == -1) {
+                        return false;
+                    }
+                    this[name] = value;
+                } else {
+                    switch (name) {
+                        default:
+                            this.attrs[name] = value;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+
+    /**
+     * CartoonPathItem initializer
+     * CartoonPathItems represent a path made up of lines, curves, and gaps which may have a stroke and a fill.
+     *
+     * @param name The name for the new CartoonPathItem (optional)
+     *
+     * @return new CartoonPathItem object
+     */
+    var CartoonPathItem = function (name) {
+        AbstractCartoonItem.call(this, name);
         this._path = [];
         this.attrs = {
             fillStyle: "#000",
@@ -220,49 +313,31 @@
             textAlign: "start",
             textBaseLine: "alphabetic"
         };
-        this.rotation = 0;
-        this.originX = 0;
-        this.originY = 0;
-        this.reverse = false;
         this.closePath = false;
-        this.visible = true;
-        this.x = 0;
-        this.y = 0;
-        this.scale = 1;
-        this.parent = null;
-        this.name = name || "object_" + objects;
-        this._bones = {};
         this.boneMatrices = {};
+        this._bones = {};
         this._buildingBone = false;
         this._paths = [[]];
         this._currentPath = 0;
         this._pathAttrs = { "0": {} };
         objects++;
     };
+    // CartoonPathItem inherits AbstractCartoonItem
+    if (typeof (Object.create) == 'function') {
+        CartoonPathItem.prototype = Object.create(AbstractCartoonItem.prototype);
+    } else {
+        CartoonPathItem.prototype = new AbstractCartoonItem("");
+    }
+    CartoonPathItem.prototype.constructor = CartoonPathItem;
 
     /**
-     * Sets the CartoonItem's parent to the given CartoonItem
-     *
-     * @param p CartoonItem to be parent
-     *
-     * @return Bool success
-     */
-    item.prototype.setParent = function (p) {
-        if (!(p instanceof item) && (p !== null)) {
-            return false;
-        }
-        this.parent = p;
-        return true;
-    };
-
-    /**
-     * Adds a Matrix to the CartoonItem's list of Matrices. Each Matrix can be used to manipulate a number of vertices
+     * Adds a Matrix to the CartoonPathItem's list of Matrices. Each Matrix can be used to manipulate a number of vertices
      *
      * @param bone Matrix object
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.addBone = function (bone) {
+    CartoonPathItem.prototype.addBone = function (bone) {
         var name = bone.name;
         if (this._bones[name] === undefined) {
             this._bones[name] = [];
@@ -274,12 +349,12 @@
     /**
      * Sets the vertices that a given Matrix may manipulate
      *
-     * @param bonename A Matrix object or name of a Matrix object in this CartoonItem's list of bones
+     * @param bonename A Matrix object or name of a Matrix object in this CartoonPathItem's list of bones
      * @param segmentlist A list of vertices
      *
-     * @return This CartoonItem or false if there was an error
+     * @return This CartoonPathItem or false if there was an error
      */
-    item.prototype.setBoneSegments = function (bonename, segmentlist) {
+    CartoonPathItem.prototype.setBoneSegments = function (bonename, segmentlist) {
         if (typeof (bonename) != "string") {
             bonename = bonename.name;
         }
@@ -291,14 +366,14 @@
     };
 
     /**
-     * Sets the given Matrix to automatically adopt all future vertices until CartoonItem.endBone() is called.
-     * If the Matrix object given is not in this CartoonItem's list of bones, it will be added
+     * Sets the given Matrix to automatically adopt all future vertices until CartoonPathItem.endBone() is called.
+     * If the Matrix object given is not in this CartoonPathItem's list of bones, it will be added
      *
      * @param bone A Matrix object
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.beginBone = function (bone) {
+    CartoonPathItem.prototype.beginBone = function (bone) {
         var name = bone.name;
         if (this._bones[name] === undefined) {
             this._bones[name] = [];
@@ -309,19 +384,19 @@
     };
 
     /**
-     * Tells the CartoonItem to stop giving the current Matrix power over new vertices
+     * Tells the CartoonPathItem to stop giving the current Matrix power over new vertices
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.endBone = function () {
+    CartoonPathItem.prototype.endBone = function () {
         this._buildingBone = false;
         return this;
     };
 
     /**
-     * Draws the CartoonItem
+     * Draws the CartoonPathItem
      */
-    item.prototype.draw = function (scene) {
+    CartoonPathItem.prototype.draw = function (scene) {
         for (var name in this.attrs) {
             scene[name] = this.attrs[name];
         }
@@ -396,12 +471,14 @@
     };
 
     /**
-     * Transforms the parent Canvas's Context2d into the CartoonItem's local Matrix
+     * Transforms the parent Canvas's Context2d into the CartoonPathItem's local Matrix
      *
      * @param ctext CanvasRenderingContext2d to transform
+     *
+     * @return An object telling the origin offset of the final parent item
      * @private
      */
-    item.prototype._getGlobal = function (ctext) {
+    CartoonPathItem.prototype._getGlobal = function (ctext) {
         var matrices = [],
             currentMatrix = this;
         var originx, originy, scale, cx, cy, rotation, sign;
@@ -427,6 +504,7 @@
             ctext.rotate(rotation * (pi / 180));
             ctext.scale(sign * scale, scale);
         }
+        return { "originX": originx, "originY": originy };
     };
 
     /**
@@ -435,7 +513,7 @@
      * @return List of vertices in global coordinates
      * @private
      */
-    item.prototype._getGlobalPath = function () {
+    CartoonPathItem.prototype._getGlobalPath = function () {
         // _getGlobal only transforms the scene context
         // getGlobalPath transforms (a copy of) the path itself.
         var path = this.getPath(),
@@ -536,28 +614,28 @@
     };
 
     /**
-     * Gets the CartoonItem's list of vertices
+     * Gets the CartoonPathItem's list of vertices
      *
      * @return List of vertices
      */
-    item.prototype.getPath = function () {
+    CartoonPathItem.prototype.getPath = function () {
         return [].concat(this._path);
     };
 
     /**
-     * Sets the CartoonItem's list of vertices to the given list
+     * Sets the CartoonPathItem's list of vertices to the given list
      *
      * @param path New list of vertices
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.setPath = function (path) {
+    CartoonPathItem.prototype.setPath = function (path) {
         this._path = path;
         return this;
     };
 
     /**
-     * Adds three vertices describing a bezier curve to the CartoonItem's list of vertices
+     * Adds three vertices describing a bezier curve to the CartoonPathItem's list of vertices
      *
      * @param x The destination x coordinate
      * @param y The destination y coordinate
@@ -566,9 +644,9 @@
      * @param cx2 The x coordinate of the second control point
      * @param cy2 The y coordinate of the second control point
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
+    CartoonPathItem.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
         this._path.push({ "type": "bezierCurve", "x": x, "y": y });
         this._path.push({ "type": "control1", "x": cx1, "y": cy1 });
         var nLength = this._path.push({ "type": "control2", "x": cx2, "y": cy2 });
@@ -580,16 +658,16 @@
     };
 
     /**
-     * Adds two vertices describing a quadratic curve to the CartoonItem's list of vertices
+     * Adds two vertices describing a quadratic curve to the CartoonPathItem's list of vertices
      *
      * @param x The destination x coordinate
      * @param y The destination y coordinate
      * @param cx The x coordinate of the control point
      * @param cy The y coordinate of the control point
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
+    CartoonPathItem.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
         this._path.push({ "type": "quadraticCurve", "x": x, "y": y });
         var nLength = this._path.push({ "type": "control1", "x": cpx, "y": cpy });
         if (this._buildingBone) {
@@ -600,7 +678,7 @@
     };
 
     /**
-     * Adds two vertices describing an arc curve to the CartoonItem's list of vertices
+     * Adds two vertices describing an arc curve to the CartoonPathItem's list of vertices
      *
      * @param x The destination x coordinate
      * @param y The destination y coordinate
@@ -608,9 +686,9 @@
      * @param y2 The y coordinate of a point on the arc
      * @param radius The radius of the arc
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.arcTo = function (x, y, x2, y2, radius) {
+    CartoonPathItem.prototype.arcTo = function (x, y, x2, y2, radius) {
         this._path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
         var nLength = this._path.push({ "type": "control1", "x": x2, "y": y2 });
         if (this._buildingBone) {
@@ -621,14 +699,14 @@
     };
 
     /**
-     * Adds a vertex describing a line to the CartoonItem's list of vertices
+     * Adds a vertex describing a line to the CartoonPathItem's list of vertices
      *
      * @param x The destination x coordinate
      * @param y The destination y coordinate
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.lineTo = function (x, y) {
+    CartoonPathItem.prototype.lineTo = function (x, y) {
         var nLength = this._path.push({ "type": "line", "x": x, "y": y });
         if (this._buildingBone) {
             this._bones[this._buildingBone].push(nLength - 1);
@@ -638,14 +716,14 @@
     };
 
     /**
-     * Adds a vertex describing a jump to a new point to the CartoonItem's list of vertices
+     * Adds a vertex describing a jump to a new point to the CartoonPathItem's list of vertices
      *
      * @param x The destination x coordinate
      * @param y The destination y coordinate
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.moveTo = function (x, y) {
+    CartoonPathItem.prototype.moveTo = function (x, y) {
         var nLength = this._path.push({ "type": "move", "x": x, "y": y });
         if (this._buildingBone) {
             this._bones[this._buildingBone].push(nLength - 1);
@@ -657,9 +735,9 @@
     /**
      * Ends the construction of the current path
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.endPath = function () {
+    CartoonPathItem.prototype.endPath = function () {
         this._currentPath++;
         this._pathAttrs[this._currentPath] = {};
         this._paths.push([]);
@@ -671,9 +749,9 @@
      *
      * @param value The new fill style
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.fillFor = function (value) {
+    CartoonPathItem.prototype.fillFor = function (value) {
         this._pathAttrs[this._currentPath].fillStyle = value;
         return this;
     };
@@ -683,9 +761,9 @@
      *
      * @param value The new stroke style
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.strokeFor = function (value) {
+    CartoonPathItem.prototype.strokeFor = function (value) {
         this._pathAttrs[this._currentPath].strokeStyle = value;
         return this;
     };
@@ -695,55 +773,116 @@
      *
      * @param value The new line width
      *
-     * @return This CartoonItem
+     * @return This CartoonPathItem
      */
-    item.prototype.lineWidthFor = function (value) {
+    CartoonPathItem.prototype.lineWidthFor = function (value) {
         this._pathAttrs[this._currentPath].lineWidth = value;
         return this;
     };
+    window.CartoonPathItem = CartoonPathItem;
 
     /**
-     * Sets one or more CartoonItem attributes
-     * If a name is given but no value, the value of the attribute is returned
+     * GenericCartoonItem initializer
+     * GenericCartoonItems represent a generic Cartoon Item with a customizable draw() function.
+     * A basic use for this class would be creating an object and then writing a new function to draw it.
+     * For example:
+     *     var myItem = new GenericCartoonItem();
+     *     myItem.draw = function (ctext) {
+     *         ctext.fillRect(50, 50, 100, 100);
+     *     };
+     * The functions getGlobal() and customizeContext() are provided for convenience.
      *
-     * @param name Name of an CartoonItem attribute or an object describing several attributes
-     * @param value The new value for the attribute (optional)
+     * @param name The name for the new GenericCartoonItem (optional)
      *
-     * @return Bool success
+     * @return new GenericCartoonItem object
      */
-    item.prototype.attr = function (name, value) {
-        if (typeof (name) == "object") {
-            var success = true;
-            for (var n in name) {
-                success = success && this.attr(n, name[n]);
-            }
-            return success;
-        } else {
-            if (value === undefined) {
-                if (this.attrs[name] === undefined) {
-                    if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible"].indexOf(name) == -1) {
-                        return false;
-                    }
-                    return this[name];
-                }
-                return this.attrs[name];
-            } else {
-                if (this.attrs[name] === undefined) {
-                    if (["x", "y", "rotation", "scale", "path", "reverse", "closePath", "visible"].indexOf(name) == -1) {
-                        return false;
-                    }
-                    this[name] = value;
-                } else {
-                    switch (name) {
-                        default:
-                            this.attrs[name] = value;
-                    }
-                }
-            }
-        }
-        return true;
+    var GenericCartoonItem = function (name) {
+        AbstractCartoonItem.call(this, name);
+        this.attrs = {
+            fillStyle: "#000",
+            font: "Arial",
+            globalAlpha: 1.0,
+            globalCompositeOperation: "source-over",
+            lineCap: "butt",
+            lineJoin: "miter",
+            lineWidth: 1.0,
+            miterLimit: 10,
+            shadowBlur: 0,
+            shadowColor: "rgba(0,0,0,0)",
+            shadowOffsetX: 0,
+            shadowOffsetY: 0,
+            strokeStyle: "#000",
+            textAlign: "start",
+            textBaseLine: "alphabetic"
+        };
+        objects++;
     };
-    window.CartoonItem = item;
+    // GenericCartoonItem inherits AbstractCartoonItem
+    if (typeof (Object.create) == 'function') {
+        GenericCartoonItem.prototype = Object.create(AbstractCartoonItem.prototype);
+    } else {
+        GenericCartoonItem.prototype = new AbstractCartoonItem("");
+    }
+    GenericCartoonItem.prototype.constructor = GenericCartoonItem;
+
+    GenericCartoonItem.prototype.getGlobal = CartoonPathItem._getGlobal;
+
+    /**
+     * Prepares the CanvasRenderingContext2d by setting all of the values for drawing
+     * The context is not transformed by this function. To transform the context,
+     * use GenericCartoonItem.getGlobal() instead.
+     *
+     * @param ctext CanvasRenderingContext2d to customize
+     */
+    GenericCartoonItem.prototype.customizeContext = function (ctext) {
+        for (var name in this.attrs) {
+            ctext[name] = this.attrs[name];
+        }
+    };
+
+    window.GenericCartoonItem = GenericCartoonItem;
+
+    /**
+     * CartoonImageItem initializer
+     * The CartoonImageItem class is for using images in CartoonCanvases.
+     *
+     * @param name The name for the new CartoonImageItem
+     * @param picture An image element that will be drawn on the CartoonCanvas
+     *
+     * @return new CartoonImageItem
+     */
+    var CartoonImageItem = function (name, picture) {
+        AbstractCartoonItem.call(this, name);
+        this.attrs = {
+            globalAlpha: 1.0,
+            globalCompositeOperation: "source-over"
+        };
+        this.img = picture;
+    };
+    // CartoonImageItem inherits AbstractCartoonItem
+    if (typeof (Object.create) == 'function') {
+        CartoonImageItem.prototype = Object.create(AbstractCartoonItem.prototype);
+    } else {
+        CartoonImageItem.prototype = new AbstractCartoonItem("");
+    }
+    CartoonImageItem.prototype.constructor = CartoonImageItem;
+
+    CartoonImageItem.prototype._getGlobal = CartoonPathItem._getGlobal;
+
+    /**
+     * Draws the image onto a canvas
+     *
+     * @param CanvasRenderingContext2d to draw with
+     */
+    CartoonImageItem.draw = function (ctext) {
+        for (var name in this.attrs) {
+            ctext[name] = this.attrs[name];
+        }
+        var origins = this._getGlobal(ctext);
+        ctext.drawImage(this.img, origins.originX, origins.originY);
+    };
+
+    window.CartoonImageItem = CartoonImageItem;
 
     // Matrix
 

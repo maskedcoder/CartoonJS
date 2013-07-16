@@ -2,7 +2,7 @@
 var canvas = new CartoonCanvas("container");
 
 // Make a square
-var square = new CartoonItem("square")
+var square = new CartoonPathItem("square")
                 .moveTo(-50,-50)
                 .lineTo(-50,50)
                 .lineTo(50,50)

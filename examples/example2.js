@@ -17,7 +17,7 @@ background.draw = function () {
 };
 
 // Make the center circle
-var center = new CartoonItem("center")
+var center = new CartoonPathItem("center")
                 .moveTo(-50, 0)
                 .bezierCurveTo(50, 0, -50, -67, 50, -67)
                 .bezierCurveTo(-50, 0, 50, 67, -50, 67);
@@ -33,7 +33,7 @@ center.attr({
 // Make another some more circles
 // All these new circles will be
 // part of the same CartoonItem (Amazing!)
-var circles = new CartoonItem("circles")
+var circles = new CartoonPathItem("circles")
                 .moveTo(-90, 0) // One on left
                 .bezierCurveTo(-60, 0, -90, -20, -60, -20)
                 .bezierCurveTo(-90, 0, -60, 20, -90, 20)
@@ -65,7 +65,7 @@ canvas.addItem(center);
 canvas.addItem(circles);
 
 // You know, I think I'll add a rectangle, just because
-var rect = new CartoonItem("rect")
+var rect = new CartoonPathItem("rect")
                 .moveTo(-30,-50)
                 .lineTo(-30,50)
                 .lineTo(30,50)

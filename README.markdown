@@ -28,7 +28,7 @@ Here is an example of a simple animation:
     var canvas = new CartoonCanvas("container");
 
     // Make a square
-    var square = new CartoonItem("square")
+    var square = new CartoonPathItem("square")
                     .moveTo(-50,-50)
                     .lineTo(-50,50)
                     .lineTo(50,50)
@@ -66,7 +66,7 @@ Here is an example of a simple animation:
 
 ### CartoonCanvas
 
-Provides an interface for the HTML5 canvas. Each CartoonCanvas can hold multiple CartoonItems and one Background object.
+Provides an interface for the HTML5 canvas. Each CartoonCanvas can hold multiple Cartoon Items and one Background object.
 
 #### CartoonCanvas Properties
 
@@ -87,25 +87,25 @@ Creates an empty CartoonCanvas.
 
 ##### CartoonCanvas.addItem(item) -> null
 
-Puts a CartoonItem in the list of items to draw every refresh.
+Puts a Cartoon Item in the list of items to draw every refresh.
 
-- `item` : a CartoonItem
+- `item` : a Cartoon Item
 
 ##### CartoonCanvas.draw() -> null
 
-Clears the canvas element and draws the background and all child CartoonItems. No changes made to child CartoonItems or the background will be represented until this function is called.
+Clears the canvas element and draws the background and all child Cartoon Items. No changes made to child Cartoon Items or the background will be represented until this function is called.
 
-##### CartoonCanvas.getItem(name) -> CartoonItem
+##### CartoonCanvas.getItem(name) -> Cartoon Item
 
-Fetches a CartoonItem from the CartoonCanvas's list.
+Fetches a Cartoon Item from the CartoonCanvas's list.
 
-- `name` : (`string`) The name of the CartoonItem to fetch
+- `name` : (`string`) The name of the Cartoon Item to fetch
 
 ##### CartoonCanvas.removeItem(name) -> null
 
-Removes a CartoonItem from the CartoonCanvas
+Removes a Cartoon Item from the CartoonCanvas
 
-- `name` : (`string`) The name of the CartoonItem to remove
+- `name` : (`string`) The name of the Cartoon Item to remove
 
 ### Background
 
@@ -139,11 +139,11 @@ Creates an empty Background
 
 Gets called whenever the parent CartoonCanvas is refreshed. By default, this function only prints warning. In order to do anything useful, this method must be overwritten.
 
-### CartoonItem
+### CartoonPathItem
 
-Represents an object that will be drawn on a canvas. Every CartoonItem controls the actual drawing process. If you're wanting to create a custom object, just overwrite the `draw()` function.
+Represents an path made up of points connected by lines, curves, and gaps that will be drawn on a canvas. Every CartoonPathItem controls the actual drawing process. If you're wanting to create a custom object, use GenericCartoonItem instead.
 
-The CartoonItem stores a list of points in the format:
+The CartoonPathItem stores a list of points in the format:
 
     {
         x: [number],
@@ -151,25 +151,25 @@ The CartoonItem stores a list of points in the format:
         type: [move, arc, curve, quadraticCurve, bezierCurve, line, control1, or control2]
     }
 
-When the draw function is called, the CartoonItem will customize the canvas context's attributes and then run a series of commands to draw a shape.
+When the draw function is called, the CartoonPathItem will customize the canvas context's attributes and then run a series of commands to draw a shape.
 
-One CartoonItem can be the parent of another, which means that the parent's location, rotation, or scale change, the child will change equally. For complex animating, a Matrix can be created and given permission to adjust the location, rotation, or scale of specific points in the CartoonItem.
+One Cartoon Item can be the parent of another, which means that the parent's location, rotation, or scale change, the child will change equally. For complex animating, a Matrix can be created and given permission to adjust the location, rotation, or scale of specific points in the Cartoon Item. CartoonPathItems, CartoonImageItems, and GenericCartoonItems can all be parents of one another.
 
-#### CartoonItem Properties
+#### CartoonPathItem Properties
 
 - `attrs` : An object that stores custom drawing data, which will be applied to the canvas rendering context before drawing
-- `boneMatrices` : An object listing all of the matrices that can act on this CartoonItem
+- `boneMatrices` : An object listing all of the matrices that can act on this CartoonPathItem
 - `closePath` : (default: `true`) Whether or not to close the path
-- `name` : The name of the CartoonItem. Don't reuse names.
-- `originX` : (default: `0`) The x component of the point that the CartoonItem will be rotated around
-- `originY` : (default: `0`) The y component of the point that the CartoonItem will be rotated around
-- `parent` : A reference to the parent CartoonItem, if any
+- `name` : The name of the CartoonPathItem. Don't reuse names.
+- `originX` : (default: `0`) The x component of the point that the CartoonPathItem will be rotated around
+- `originY` : (default: `0`) The y component of the point that the CartoonPathItem will be rotated around
+- `parent` : A reference to the parent CartoonPathItem, if any
 - `reverse` : Whether or not to draw the path with left and right swapped
-- `rotation` : (default: `0`) The rotation of the CartoonItem
-- `scale` : (default: `1`) The scale of the CartoonItem
-- `visible` : (default: `true`) Whether or not to draw the CartoonItem
-- `x` : (default: `0`) The x position of the CartoonItem
-- `y`: (default: `0`) The y position of the CartoonItem
+- `rotation` : (default: `0`) The rotation of the CartoonPathItem
+- `scale` : (default: `1`) The scale of the CartoonPathItem
+- `visible` : (default: `true`) Whether or not to draw the CartoonPathItem
+- `x` : (default: `0`) The x position of the CartoonPathItem
+- `y`: (default: `0`) The y position of the CartoonPathItem
 
 The `attrs` object is used to customize the CanvasRenderingContext2D before drawing. For more information on these attributes, see the [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Attributes "CanvasRenderingContext2D").
 
@@ -220,60 +220,58 @@ These are the settings controlled by the `attrs` object:
     - `middle`
     - `top`
 
-#### CartoonItem Methods
+#### CartoonPathItem Methods
 
-##### CartoonItem([name]) -> new CartoonItem
+##### CartoonPathItem([name]) -> new CartoonPathItem
 
-Creates a new CartoonItem identified by `name`. **Warning:** do not reuse names for CartoonItems in the same CartoonCanvas. When a new CartoonItem is added to a CartoonCanvas that has another by that name, the old one will be mysteriously removed, without warning.
+Creates a new CartoonPathItem identified by `name`. **Warning:** do not reuse names for Cartoon Items in the same CartoonCanvas. When a new Cartoon Item is added to a CartoonCanvas that has another by that name, the old one will be mysteriously removed, without warning.
 
-- `name` : A string to uniquely identify the CartoonItem
+- `name` : A string to uniquely identify the CartoonPathItem
 
-##### CartoonItem.setParent(p) -> bool
+##### CartoonPathItem.setParent(p) -> bool
 
-Attempts to set `p` as this CartoonItem's parent. A parent item will have indirect control over the location, scale, and rotation of a child CartoonItem. The child's own geometric properties will not reflect any changes to the parent, but before every drawing, the context will be transformed into the parent's local coordinate system before drawing the child.
+Attempts to set `p` as this CartoonPathItem's parent. A parent item will have indirect control over the location, scale, and rotation of a child Cartoon Item. The child's own geometric properties will not reflect any changes to the parent, but before every drawing, the context will be transformed into the parent's local coordinate system before drawing the child.
 
-To make a child independant, run `CartoonItem.setParent(null);`.
+To make a child independant, run `CartoonPathItem.setParent(null);`.
 
-- `p` : A CartoonItem to become parent, or null to remove a parent-child relationship
+- `p` : A CartoonPathItem to become parent, or null to remove a parent-child relationship
 
-##### CartoonItem.addBone(bone) -> this
+##### CartoonPathItem.addBone(bone) -> this
 
-Adds `bone` to this CartoonItem's list of matrices. This CartoonItem is returned.
-
-- `bone` : A Matrix object
-
-##### CartoonItem.setBoneSegments(bonename, segmentlist) -> this
-
-Attempts to replace any list of segments that the Matrix identified by `bonename` controls with `segmentlist`. If `bonename` points to a Matrix not in the CartoonItem's list, the function will return false. If the operation succeeds, this CartoonItem is returned.
-
-- `bonename` : A Matrix object or name of a Matrix object in the CartoonItem's list of matrices
-- `segmentlist` : A list of indexes of vertices in `CartoonItem.path`
-
-##### CartoonItem.beginBone(bone) -> this
-
-Tells the CartoonItem to assign all new vertices to `bone` until `CartoonItem.endBone()` is called. If the Matrix given is not in the CartoonItem's list of matrices, it will be added. This CartoonItem is returned.
+Adds `bone` to this CartoonPathItem's list of matrices. This CartoonPathItem is returned.
 
 - `bone` : A Matrix object
 
-##### CartoonItem.endBone() -> this
+##### CartoonPathItem.setBoneSegments(bonename, segmentlist) -> this
 
-Tells the CartoonItem to stop assigning all new vertices to the Matrix object that was specified in `CartoonItem.beginBone()`. This is not necessary when switching immediately from one Matrix to the next, but it provides some clarity. This CartoonItem is returned/
+Attempts to replace any list of segments that the Matrix identified by `bonename` controls with `segmentlist`. If `bonename` points to a Matrix not in the CartoonPathItem's list, the function will return false. If the operation succeeds, this CartoonPathItem is returned.
 
-##### CartoonItem.draw(scene) -> null
+- `bonename` : A Matrix object or name of a Matrix object in the CartoonPathItem's list of matrices
+- `segmentlist` : A list of indexes of vertices in `CartoonPathItem.path`
 
-Draws the CartoonItem, using the CanvasRenderingContext2D represented by `scene`. First, `scene` is customized with the attributes in `this.attrs`, then the points in the path are calculated in global coordinates (based on adjustments from parent CartoonItems or Matrices in the CartoonItem's list), then the function iterates through the list of commands associated with each point to draw a path on the canvas, and finally the path is filled and stroked. **Warning:** After drawing, the CanvasRenderingContext2D will still carry the custom attributes. If another object is drawn without changing the custom attributes, it will be drawn with those same old custom attributes.
+##### CartoonPathItem.beginBone(bone) -> this
 
-In order to create a custom item for the CartoonCanvas, this method can be overwritten.
+Tells the CartoonPathItem to assign all new vertices to `bone` until `CartoonPathItem.endBone()` is called. If the Matrix given is not in the CartoonPathItem's list of matrices, it will be added. This CartoonPathItem is returned.
+
+- `bone` : A Matrix object
+
+##### CartoonPathItem.endBone() -> this
+
+Tells the CartoonPathItem to stop assigning all new vertices to the Matrix object that was specified in `CartoonPathItem.beginBone()`. This is not necessary when switching immediately from one Matrix to the next, but it provides some clarity. This CartoonPathItem is returned/
+
+##### CartoonPathItem.draw(scene) -> null
+
+Draws the CartoonPathItem, using the CanvasRenderingContext2D represented by `scene`. First, `scene` is customized with the attributes in `this.attrs`, then the points in the path are calculated in global coordinates (based on adjustments from parent CartoonPathItems or Matrices in the CartoonPathItem's list), then the function iterates through the list of commands associated with each point to draw a path on the canvas, and finally the path is filled and stroked. **Warning:** After drawing, the CanvasRenderingContext2D will still carry the custom attributes. If another object is drawn without changing the custom attributes, it will be drawn with those same old custom attributes.
 
 - `scene` : A CanvasRenderingContext2D
 
-##### CartoonItem.getPath() -> Array
+##### CartoonPathItem.getPath() -> Array
 
-Returns the list of point that make up this CartoonItem's path.
+Returns the list of point that make up this CartoonPathItem's path.
 
-##### CartoonItem.bezierCurveTo(x, y, cx1, cy1, cx2, cy2) -> this
+##### CartoonPathItem.bezierCurveTo(x, y, cx1, cy1, cx2, cy2) -> this
 
-Adds three points to the CartoonItem's path which describe a [bezierCurveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#bezierCurveTo%28%29) command. This CartoonItem is returned.
+Adds three points to the CartoonPathItem's path which describe a [bezierCurveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#bezierCurveTo%28%29) command. This CartoonPathItem is returned.
 
 - `x`: The x coordinate of the destination of the curve
 - `y` : The y coordinate of the destination of the curve
@@ -282,18 +280,18 @@ Adds three points to the CartoonItem's path which describe a [bezierCurveTo](htt
 - `cx2` : The x coordinate of the second control point
 - `cy2` : The y coordinate of the second control point
 
-##### CartoonItem.quadraticCurveTo(x, y, cx, cy) -> this
+##### CartoonPathItem.quadraticCurveTo(x, y, cx, cy) -> this
 
-Adds two points to the CartoonItem's path which describe a [quadraticCurveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#quadraticCurveTo%28%29). This CartoonItem is returned.
+Adds two points to the CartoonPathItem's path which describe a [quadraticCurveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#quadraticCurveTo%28%29). This CartoonPathItem is returned.
 
 - `x` : The x coordinate of the destination of the curve
 - `y` : The y coordinate of the destination of the curve
 - `cx` : The x coordinate of the control point
 - `cy` : The y coordinate of the control point
 
-##### CartoonItem.arcTo(x, y, x2, y2, radius) -> this
+##### CartoonPathItem.arcTo(x, y, x2, y2, radius) -> this
 
-Adds two points to the CartoonItem's path which describe an [arcTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#arcTo%28%29). For a more in-depth explanation of how arcTo commands work, see [DBP-Consulting](http://www.dbp-consulting.com/tutorials/canvas/CanvasArcTo.html). This CartoonItem is returned.
+Adds two points to the CartoonPathItem's path which describe an [arcTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#arcTo%28%29). For a more in-depth explanation of how arcTo commands work, see [DBP-Consulting](http://www.dbp-consulting.com/tutorials/canvas/CanvasArcTo.html). This CartoonPathItem is returned.
 
 - `x` : The x coordinate of the destination of the curve
 - `y` : The y coordinate of the destination of the curve
@@ -301,57 +299,243 @@ Adds two points to the CartoonItem's path which describe an [arcTo](https://deve
 - `y2` : The y coordinate of the control point
 - `radius` The radius of the arc
 
-##### CartoonItem.lineTo(x, y) -> this
+##### CartoonPathItem.lineTo(x, y) -> this
 
-Adds a point to the CartoonItem's path which describes a [lineTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#lineTo%28%29). This CartoonItem is returned.
-
-- `x` : The x coordinate of the destination
-- `y` : The y coordinate of the destination
-
-##### CartoonItem.moveTo(x, y) -> this
-
-Adds a point to the CartoonItem's path which describes a [moveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#moveTo%28%29). This CartoonItem is returned.
+Adds a point to the CartoonPathItem's path which describes a [lineTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#lineTo%28%29). This CartoonPathItem is returned.
 
 - `x` : The x coordinate of the destination
 - `y` : The y coordinate of the destination
 
-##### CartoonItem.endPath() -> this
+##### CartoonPathItem.moveTo(x, y) -> this
 
-Ends the construction of the current subpath and prepares to begin constructing on a new one. This CartoonItem is returned.
+Adds a point to the CartoonPathItem's path which describes a [moveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#moveTo%28%29). This CartoonPathItem is returned.
 
-##### CartoonItem.fillFor(color) -> this
+- `x` : The x coordinate of the destination
+- `y` : The y coordinate of the destination
 
-Sets the background for the current subpath. This CartoonItem is returned.
+##### CartoonPathItem.endPath() -> this
+
+Ends the construction of the current subpath and prepares to begin constructing on a new one. This CartoonPathItem is returned.
+
+##### CartoonPathItem.fillFor(color) -> this
+
+Sets the background for the current subpath. This CartoonPathItem is returned.
 
 - `color` : A valid CSS color
 
-##### CartoonItem.strokeFor(value) -> this
+##### CartoonPathItem.strokeFor(value) -> this
 
-Sets the stroke style for the current subpath. This CartoonItem is returned.
+Sets the stroke style for the current subpath. This CartoonPathItem is returned.
 
 - `value` : A valid CSS color
 
-##### CartoonItem.setLineWidthFor(value) -> this
+##### CartoonPathItem.setLineWidthFor(value) -> this
 
-Sets the line width for the current subpath. This CartoonItem is returned.
+Sets the line width for the current subpath. This CartoonPathItem is returned.
 
 - `value` : The new line width
 
-##### CartoonItem.attr(object) -> bool
-##### CartoonItem.attr(name, value) -> bool
-##### CartoonItem.attr(name) -> value
+##### CartoonPathItem.attr(object) -> bool
+##### CartoonPathItem.attr(name, value) -> bool
+##### CartoonPathItem.attr(name) -> value
 
-Gets or sets the CartoonItem's attributes. If an object is given, the keys and values will be fed into this function, and return true if all were successful. If a name and value are given, the function will attempt to match the name up to an attribute and set it, returning true for success and false for failure. If just a name is given, the corresponding value for the attribute by that name will be returned, or false if there is no such attribute.
+Gets or sets the CartoonPathItem's attributes. If an object is given, the keys and values will be fed into this function, and return true if all were successful. If a name and value are given, the function will attempt to match the name up to an attribute and set it, returning true for success and false for failure. If just a name is given, the corresponding value for the attribute by that name will be returned, or false if there is no such attribute.
 
 The attributes availible for getting or setting are `x`, `y`, `rotation`, `scale`, `path`, `reverse`, `closePath`, `visible`, and anything in `this.attrs`.
 
-- `object` : An object with key/value pairs corresponding to this CartoonItem's attributes.
+- `object` : An object with key/value pairs corresponding to this CartoonPathItem's attributes.
+- `name` : The name of an attribute
+- `value` : The new value for an attribute
+
+### GenericCartoonItem
+
+Represents a the bare necessities of a Cartoon Item, made to be entirely customized. The `draw()` function by default does nothing and is supposed to be overwritten. There are functions, `getGlobal()` and `customizeContext()`, which are meant to be used to set up the canvas according to the object's personal matrix and the drawing attributes in `this.attrs`.
+
+#### GenericCartoonItem Properties
+
+- `attrs` : An object that stores custom drawing data, which will be applied to the canvas rendering context before drawing
+- `name` : The name of the GenericCartoonItem. Don't reuse names.
+- `originX` : (default: `0`) The x component of the point that the GenericCartoonItem will be rotated around
+- `originY` : (default: `0`) The y component of the point that the GenericCartoonItem will be rotated around
+- `parent` : A reference to the parent GenericCartoonItem, if any
+- `reverse` : Whether or not to draw the path with left and right swapped
+- `rotation` : (default: `0`) The rotation of the GenericCartoonItem
+- `scale` : (default: `1`) The scale of the GenericCartoonItem
+- `visible` : (default: `true`) Whether or not to draw the GenericCartoonItem
+- `x` : (default: `0`) The x position of the GenericCartoonItem
+- `y`: (default: `0`) The y position of the GenericCartoonItem
+
+The `attrs` object is used to customize the CanvasRenderingContext2D before drawing. For more information on these attributes, see the [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Attributes "CanvasRenderingContext2D").
+
+These are the settings controlled by the `attrs` object:
+
+- `fillStyle` : (default: `#000`) Color or style to use inside shapes
+- `font` : (default: `Arial`) CSS font
+- `globalAlpha` : (default: `1.0`) Controls opacity; values from 0 (invisible) to 1.0 (completely opaque)
+- `globalCompositeOperation` : (default: `source-over`) With `globalAlpha` applied this sets how shapes and images are drawn onto the existing bitmap. Options are:
+    - `source-atop`
+    - `source-in`
+    - `source-out`
+    - `source-over` (default)
+    - `destination-atop`
+    - `destination-in`
+    - `destination-out`
+    - `destination-over`
+    - `lighter`
+    - `darker`
+    - `copy`
+    - `xor`
+- `lineCap` : (default: `butt`) Type of endings on all the lines. Options are:
+    - `butt` (default)
+    - `round`
+    - `square`
+- `lineJoin` : (default: `miter`) Defines the type of corners where two lines meet. Options are:
+    - `round`
+    - `bevel`
+    - `miter` (default)
+- `lineWidth` : (default: `1.0`) Width of lines
+- `miterLimit` : (default: `10`)
+- `shadowBlur` : (default: `0`) Specifies the blurring effect
+- `shadowColor` : (default: `rgba(0,0,0,0)`) Color of the shadow
+- `shadowOffsetX` : (default: `0`) Horizontal distance the shadow will be offset
+- `shadowOffsetY` : (default: `0`) Vertical distance the shadow will be offset
+- `strokeStyle` : (default: `#000`) Color or style to use for the lines around shapes
+- `textAlign` : (default: `start`) The horizontal alignment to use for text. Options are:
+    - `center`
+    - `end`
+    - `left`
+    - `right`
+    - `start` (default)
+- `textBaseLine` : (default: `alphabetic`) Specifies the vertical baseline for the text. Options are:
+    - `alphabetic` (default)
+    - `bottom`
+    - `hanging`
+    - `ideographic`
+    - `middle`
+    - `top`
+
+#### GenericCartoonItem Methods
+
+##### GenericCartoonItem([name]) -> new GenericCartoonItem
+
+Creates a new GenericCartoonItem identified by `name`. **Warning:** do not reuse names for Cartoon Items in the same CartoonCanvas. When a new Cartoon Item is added to a CartoonCanvas that has another by that name, the old one will be mysteriously removed, without warning.
+
+- `name` : A string to uniquely identify the GenericCartoonItem
+
+##### GenericCartoonItem.setParent(p) -> bool
+
+Attempts to set `p` as this GenericCartoonItem's parent. A parent item will have indirect control over the location, scale, and rotation of a child Cartoon Item. The child's own geometric properties will not reflect any changes to the parent, but before every drawing, the context will be transformed into the parent's local coordinate system before drawing the child.
+
+To make a child independant, run `GenericCartoonItem.setParent(null);`.
+
+- `p` : A GenericCartoonItem to become parent, or null to remove a parent-child relationship
+
+##### GenericCartoonItem.draw(scene) -> null
+
+Should draw the item using the CanvasRenderingContext2d provided. This method does nothing by default; it should be overwritten to provide customized drawing for the item.
+
+- `scene` : A CanvasRenderingContext2D
+
+##### GenericCartoonItem.getGlobal(ctext) -> object
+
+Transforms the CanvasRenderingContext2d based on the item's location, scale, and rotation, and those of all of the parent Cartoon Items. This function can be used inside the `draw()` function to relieve the burdon of manually calculating new positions for every point. In general, transforming the context itself is slower than calculating the global coordinates. The object returned specifies the origins for the x-axis and y-axis for the final parent Cartoon Item.
+
+- `ctext` : A CanvasRenderingContext2D
+
+##### GenericCartoonItem.customizeContext(ctext) -> object
+
+Uses the attributes in `this.attrs` to customize the drawing of the CanvasRenderingContex2d provided. This is a convenience function that can be used inside `draw()`.
+
+- `ctext` : A CanvasRenderingContext2D
+
+##### GenericCartoonItem.attr(object) -> bool
+##### GenericCartoonItem.attr(name, value) -> bool
+##### GenericCartoonItem.attr(name) -> value
+
+Gets or sets the GenericCartoonItem's attributes. If an object is given, the keys and values will be fed into this function, and return true if all were successful. If a name and value are given, the function will attempt to match the name up to an attribute and set it, returning true for success and false for failure. If just a name is given, the corresponding value for the attribute by that name will be returned, or false if there is no such attribute.
+
+The attributes availible for getting or setting are `x`, `y`, `rotation`, `scale`, `path`, `reverse`, `visible`, and anything in `this.attrs`.
+
+- `object` : An object with key/value pairs corresponding to this GenericCartoonItem's attributes.
+- `name` : The name of an attribute
+- `value` : The new value for an attribute
+
+### CartoonImageItem
+
+Represents an image that will be drawn on the CartoonCanvas. A CartoonImageItem can be moved and resized just as easily as CartoonPathItems and GenericCartoonItems.
+
+#### CartoonImageItem Properties
+
+- `attrs` : An object that stores custom drawing data, which will be applied to the canvas rendering context before drawing
+- `img` : The Image which the CartoonImageItem will draw onto the canvas
+- `name` : The name of the CartoonImageItem. Don't reuse names.
+- `originX` : (default: `0`) The x component of the point that the CartoonImageItem will be rotated around
+- `originY` : (default: `0`) The y component of the point that the CartoonImageItem will be rotated around
+- `parent` : A reference to the parent CartoonImageItem, if any
+- `reverse` : Whether or not to draw the path with left and right swapped
+- `rotation` : (default: `0`) The rotation of the CartoonImageItem
+- `scale` : (default: `1`) The scale of the CartoonImageItem
+- `visible` : (default: `true`) Whether or not to draw the CartoonImageItem
+- `x` : (default: `0`) The x position of the CartoonImageItem
+- `y`: (default: `0`) The y position of the CartoonImageItem
+
+The `attrs` object is used to customize the CanvasRenderingContext2D before drawing. For more information on these attributes, see the [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Attributes "CanvasRenderingContext2D").
+
+These are the settings controlled by the `attrs` object:
+
+- `globalAlpha` : (default: `1.0`) Controls opacity; values from 0 (invisible) to 1.0 (completely opaque)
+- `globalCompositeOperation` : (default: `source-over`) With `globalAlpha` applied this sets how shapes and images are drawn onto the existing bitmap. Options are:
+    - `source-atop`
+    - `source-in`
+    - `source-out`
+    - `source-over` (default)
+    - `destination-atop`
+    - `destination-in`
+    - `destination-out`
+    - `destination-over`
+    - `lighter`
+    - `darker`
+    - `copy`
+    - `xor`
+
+#### CartoonImageItem methods
+
+##### CartoonImageItem(name, picture) -> new CartoonImageItem
+
+Creates a new CartoonImageItem identified by `name`. **Warning:** do not reuse names for Cartoon Items in the same CartoonCanvas. When a new Cartoon Item is added to a CartoonCanvas that has another by that name, the old one will be mysteriously removed, without warning.
+
+- `name` : A string to uniquely identify the CartoonImageItem
+- `picture` : An Image to draw
+
+##### CartoonImageItem.setParent(p) -> bool
+
+Attempts to set `p` as this CartoonImageItem's parent. A parent item will have indirect control over the location, scale, and rotation of a child Cartoon Item. The child's own geometric properties will not reflect any changes to the parent, but before every drawing, the context will be transformed into the parent's local coordinate system before drawing the child.
+
+To make a child independant, run `CartoonImageItem.setParent(null);`.
+
+- `p` : A CartoonImageItem to become parent, or null to remove a parent-child relationship
+
+##### CartoonImageItem.draw(scene) -> null
+
+Draws the CartoonImageItem using the CanvasRenderingContext2d provided, first transforming the global context into the local coordinates of the CartoonImageItem.
+
+- `scene` : A CanvasRenderingContext2D
+
+##### CartoonImageItem.attr(object) -> bool
+##### CartoonImageItem.attr(name, value) -> bool
+##### CartoonImageItem.attr(name) -> value
+
+Gets or sets the CartoonImageItem's attributes. If an object is given, the keys and values will be fed into this function, and return true if all were successful. If a name and value are given, the function will attempt to match the name up to an attribute and set it, returning true for success and false for failure. If just a name is given, the corresponding value for the attribute by that name will be returned, or false if there is no such attribute.
+
+The attributes availible for getting or setting are `x`, `y`, `rotation`, `scale`, `path`, `reverse`, `visible`, and anything in `this.attrs`.
+
+- `object` : An object with key/value pairs corresponding to this CartoonImageItem's attributes.
 - `name` : The name of an attribute
 - `value` : The new value for an attribute
 
 ### Matrix
 
-Represents an invisible object which can be used to control CartoonItems or even the vertices that make up a CartoonItem.
+Represents an invisible object which can be used to control Cartoon Items or even the vertices that make up a CartoonPathItem.
 
 #### Matrix Properties
 
@@ -368,7 +552,7 @@ Represents an invisible object which can be used to control CartoonItems or even
 
 ##### Matrix([name]) -> new Matrix object
 
-Creates a new Matrix, identified by `name`. **Warning:** A Matrix's name can interfere with CartoonItem names, if it is added to a CartoonScene, so it would be best to name it something unique.
+Creates a new Matrix, identified by `name`. **Warning:** A Matrix's name can interfere with Cartoon Item names, if it is added to a CartoonScene, so it would be best to name it something unique.
 
 - `name` : The a string that uniquely identifies the Matrix
 
@@ -380,7 +564,7 @@ Sets the `other` as this Matrix's parent, with indirect control over location, r
 
 ##### Matrix.draw() -> null
 
-Pretends to draw the Matrix. Nothing happens by default, because Matrices are supposed to be the invisible workers that manipulate CartoonItems into performing their maniacal whims.
+Pretends to draw the Matrix. Nothing happens by default, because Matrices are supposed to be the invisible workers that manipulate Cartoon Items into performing their maniacal whims.
 
 ##### Matrix.attr(object) -> bool
 ##### Matrix.attr(name, value) -> bool
@@ -471,7 +655,7 @@ Sends the Animation backward 15 seconds, or to the start, if the current time is
 
 ### AnimationScene
 
-Represents a scene during an Animation. Each scene gets to keep track of key frames. The Animation checks each step to see what AnimationScene is active; the active AnimationScene checks each step to see what CartoonItems are changing, and these changes finally get drawn.
+Represents a scene during an Animation. Each scene gets to keep track of key frames. The Animation checks each step to see what AnimationScene is active; the active AnimationScene checks each step to see what Cartoon Items are changing, and these changes finally get drawn.
 
 #### AnimationScene Properties
 
@@ -499,28 +683,28 @@ Makes the HTML canvases that are controlled by the CanvasScene in `this.scene` a
 
 ##### AnimationScene.stepAnimation(time, [update]) -> null
 
-Draws the next frame in the sequence corresponding to this AnimationScene. First, all of the CartoonItems that are being animated get are transformed based on the time given, then the CartoonScene in `this.scene` is drawn. If `update` is `true`, all the instantaneous CartoonItem changes listed in `this.immediateTimeline` that are supposed to happen before the time `time` are made (even if unnecessary).
+Draws the next frame in the sequence corresponding to this AnimationScene. First, all of the Cartoon Items that are being animated get are transformed based on the time given, then the CartoonScene in `this.scene` is drawn. If `update` is `true`, all the instantaneous Cartoon Item changes listed in `this.immediateTimeline` that are supposed to happen before the time `time` are made (even if unnecessary).
 
 - `time` : An integer specifying the current time during the animation
 - `update` : Whether or not to update all of the instantaneous transformations in `this.immediateTimeline`
 
 ##### AnimationScene.addKeyFrame(item, time, attr, val) -> null
 
-Adds a key frame wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the CartoonItem is not the current value, and no other key frames for that attribute on that CartoonItem have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
+Adds a key frame wherein the given Cartoon Item has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the Cartoon Item is not the current value, and no other key frames for that attribute on that Cartoon Item have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
 
-- `item` : A CartoonItem or the name of a CartoonItem
+- `item` : A Cartoon Item or the name of a Cartoon Item
 - `time` : The time for the key frame
-- `attr` : A CartoonItem [attribute](#cartoonitem-properties) to be animated
-- `val` : The value of the CartoonItem attribute
+- `attr` : A Cartoon Item [attribute](#cartoonpathitem-properties) to be animated
+- `val` : The value of the Cartoon Item attribute
 
 ##### AnimationScene.addAttrChange(item, time, attr, val) -> null
 
-Adds a key frame wherein the given CartoonItem has the attribute `attr` equal to the value `val` at the given time. This is for CartoonItem transformations that will take place instantaneously, with no transition between one value and the next. This is meant to be used for boolean CartoonItem attributes, like `visible` or `reverse`. When the user triggers a jump from one time in the animation to a different time, no matter how small the jump, all of the instantaneous transformations that are to happen before the new time *will* be run through, whether or not they are necessary.
+Adds a key frame wherein the given Cartoon Item has the attribute `attr` equal to the value `val` at the given time. This is for Cartoon Item transformations that will take place instantaneously, with no transition between one value and the next. This is meant to be used for boolean Cartoon Item attributes, like `visible` or `reverse`. When the user triggers a jump from one time in the animation to a different time, no matter how small the jump, all of the instantaneous transformations that are to happen before the new time *will* be run through, whether or not they are necessary.
 
-- `item` : A CartoonItem or the name of a CartoonItem
+- `item` : A Cartoon Item or the name of a Cartoon Item
 - `time` : The time for the key frame
-- `attr` : A CartoonItem [attribute](#cartoonitem-properties) to be animated, preferabbly one with a boolean value
-- `val` : The value of the CartoonItem attribute
+- `attr` : A Cartoon Item [attribute](#cartoonpathitem-properties) to be animated, preferabbly one with a boolean value
+- `val` : The value of the Cartoon Item attribute
 
 ##### AnimationScene.compile() -> null
 

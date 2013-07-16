@@ -22,8 +22,8 @@
                 module("CartoonItem tests");
 
                 test("Basic", function () {
-                    var item = new CartoonItem("My Item"),
-                        otherItem = new CartoonItem("His Item");
+                    var item = new CartoonPathItem("My Item"),
+                        otherItem = new CartoonPathItem("His Item");
                     equal(item.name, "My Item", "CartoonItem is identified by name");
 
                     equal(item.setParent(43), false, "CartoonItem cannot have a non-null non-CartoonItem as parent");
@@ -48,7 +48,7 @@
                     otherItem.x = 0;
                 });
                 test("CartoonItem with bones", function () {
-                    var item = new CartoonItem("My Item"),
+                    var item = new CartoonPathItem("My Item"),
                         matrix = new Matrix("My Matrix"),
                         otherMatrix = new Matrix("Not My Matrix");
                     item.addBone(matrix);
@@ -70,29 +70,29 @@
                     matrix.x = 10;
                     equal(item._getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
                 });
-                test("CartoonItem paths", function () {
-                    var otherItem = new CartoonItem("His Item");
+                test("CartoonPathItems", function () {
+                    var otherItem = new CartoonPathItem("His Item");
                     otherItem.moveTo(-10, -10);
-                    equal(otherItem.getPath().length, 1, "CartoonItem.moveTo() creates 1 new vertex");
+                    equal(otherItem.getPath().length, 1, "CartoonPathItem.moveTo() creates 1 new vertex");
                     equal(otherItem.getPath()[0].type, "move", "The type for the new vertex is 'move'");
 
                     otherItem.lineTo(10, -10);
-                    equal(otherItem.getPath().length, 2, "CartoonItem.lineTo() creates 1 new vertex");
+                    equal(otherItem.getPath().length, 2, "CartoonPathItem.lineTo() creates 1 new vertex");
                     equal(otherItem.getPath()[1].type, "line", "The type for the new vertex is 'line'");
 
                     otherItem.bezierCurveTo(10, 10, 20, -10, 20, 10);
-                    equal(otherItem.getPath().length, 5, "CartoonItem.bezierCurveTo() creates 3 new vertices");
+                    equal(otherItem.getPath().length, 5, "CartoonPathItem.bezierCurveTo() creates 3 new vertices");
                     equal(otherItem.getPath()[2].type, "bezierCurve", "The type for the first new vertex is 'bezierCurve'");
                     equal(otherItem.getPath()[3].type, "control1", "The type for the second new vertex is 'control1'");
                     equal(otherItem.getPath()[4].type, "control2", "The type for third new new vertex is 'control2'");
 
                     otherItem.quadraticCurveTo(-10, 10, 0, 20);
-                    equal(otherItem.getPath().length, 7, "CartoonItem.quadraticCurveTo() creates 5 new vertices");
+                    equal(otherItem.getPath().length, 7, "CartoonPathItem.quadraticCurveTo() creates 5 new vertices");
                     equal(otherItem.getPath()[5].type, "quadraticCurve", "The type for the first new vertex is 'quadraticCurve'");
                     equal(otherItem.getPath()[6].type, "control1", "The type for the second new vertex is 'control1'");
 
                     otherItem.arcTo(-10, -10, -20, 0, 10);
-                    equal(otherItem.getPath().length, 9, "CartoonItem.quadraticCurveTo() creates 5 new vertices");
+                    equal(otherItem.getPath().length, 9, "CartoonPathItem.quadraticCurveTo() creates 5 new vertices");
                     equal(otherItem.getPath()[7].type, "arc", "The type for the first new vertex is 'arc'");
                     equal(otherItem.getPath()[8].type, "control1", "The type for the second new vertex is 'control1'");
                     equal(otherItem.getPath()[7].radius, 10, "The first vertex has an attribute 'radius', with the expected value");
@@ -105,14 +105,14 @@
                     equal(otherItem._pathAttrs[0].fillStyle, "rgb(0,0,0)", "Can set fill for individual paths");
 
                     otherItem.endPath();
-                    equal(otherItem._currentPath, 1, "CartoonItem.endPath() ends creation of current path")
-                    equal(otherItem._paths.length, 2, "CartoonItem.endPath() prepares for new creating new path");
+                    equal(otherItem._currentPath, 1, "CartoonPathItem.endPath() ends creation of current path")
+                    equal(otherItem._paths.length, 2, "CartoonPathItem.endPath() prepares for new creating new path");
                 });
 
                 module("Matrix tests");
 
                 test("Basic", function () {
-                    var item = new CartoonItem("My Item"),
+                    var item = new CartoonPathItem("My Item"),
                         matrix = new Matrix("My Matrix"),
                         otherMatrix = new Matrix("Not My Matrix");
                     equal(matrix.name, "My Matrix", "Matrices have names");
@@ -135,7 +135,7 @@
                 test("Basic", function () {
                     var noCanvas = new CartoonCanvas(5, 5),
                         canvas = new CartoonCanvas("qunit-fixture", 900, 600),
-                        item = new CartoonItem("My Item");
+                        item = new CartoonPathItem("My Item");
                     equal(noCanvas.canvas.nodeName, "CANVAS", "An HTML canvas will be created and inserted into the document for a new CartoonCanvas if no element is given");
                     equal(canvas.canvas.parentNode.id, "qunit-fixture", "Giving a string will result in an HTML canvas placed in the element with that string as its id");
 
@@ -145,7 +145,7 @@
                     equal(canvas.getItem(item.name), undefined, "CartoonItems can be removed entirely from a CartoonCanvas, using CartoonCanvas.removeItem()");
                 });
                 test("Canvas graphics", function () {
-                    var newitem = new CartoonItem("New Item"),
+                    var newitem = new CartoonPathItem("New Item"),
                         canvas = new CartoonCanvas("qunit-fixture", 900, 600);
                     newitem.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
                     newitem.attr("fillStyle", "#f00");
@@ -187,7 +187,7 @@
                     var canvas = new CartoonCanvas("qunit-fixture", 200, 100),
                         anim = new CartoonAnimation(true),
                         firstscene = new AnimationScene(canvas),
-                        square = new CartoonItem("Square");
+                        square = new CartoonPathItem("Square");
                     square.moveTo(-10, -10).lineTo(-10, 10).lineTo(10, 10).lineTo(10, -10).lineTo(-10, -10);
                     square.attr("fillStyle", "#f00");
                     square.attr("strokeStyle", "#f00");
