@@ -70,7 +70,7 @@ var scene1 = new AnimationScene(canvas, background);
 // First hop:
 scene1.addKeyFrame(legMatrix, 200, "rotation", 45); // Moving the matrix moves the leg vertices
 // If you didn't notice, the rotational center is (0,0) in the CartoonPathItem's local coordinates
-// I could have played with originX and originY, but that gets complicated in a hurry
+// I could have played with the CartoonPathItem's originX and originY, but that gets complicated in a hurry
 scene1.addKeyFrame(legMatrix, 500, "rotation", 0);
 scene1.addKeyFrame(animal, 500, "y", 200);
 scene1.addKeyFrame(animal, 1000, "y", 300);
@@ -117,17 +117,46 @@ hopToTheSide(scene1, animal, legMatrix, 5000, 200, 300);
 // WHEEEEEE!!!!
 
 // But that has a problem: The animal magically floats backwards
-// How about adding a instantaneaous change to the reverse property?
+// How about adding an instantaneaous change to the reverse property?
 scene1.addAttrChange(animal, 4000, "reverse", true);
 // Aack! The animal is hopping backward! Let's reverse it again:
 scene1.addAttrChange(animal, 5000, "reverse", false);
 // Much better. Not amazing, but something. I don't feel like implementing leftward hops, so we'll leave it at that.
 
+// You know what this needs? Some ground. See, in real life, animals don't float (except in water, but you get the point)
+var ground = new GenericCartoonItem("ground");
+ground.draw = function (ctxt) {
+    this.customizeContext(ctxt); // This sets the pen color, and fill and all that
+    // If this was an object that moved around, I would use getGlobal() around here
+
+    var i = 1,
+        length = 90, // 90 clumps of grass
+        groundLevel = 340;
+    ctxt.beginPath();
+    ctxt.moveTo(0, groundLevel + 10);
+    ctxt.lineTo(0, groundLevel);
+    for (; i <= length; i++) {
+        ctxt.lineTo(i * 10 - 5, groundLevel - 10);
+        ctxt.lineTo(i * 10, groundLevel);
+    }
+    ctxt.lineTo(i * 10, groundLevel + 10);
+    ctxt.closePath();
+    ctxt.fill();
+    ctxt.stroke();
+};
+// GenericCartoonItem + custom draw() function = We're ready to go!
+canvas.addItem(ground);
+ground.attr({
+    "fillStyle": "green",
+    "lineWidth": 1
+});
+// (Did you notice that I can do this stuff, like, whenever? Even after doing most of the animating - though it is kinda messy)
+
 // Now for scene 2!
 var canvas2 = new CartoonCanvas("container");
 var scene2 = new AnimationScene(canvas2, background);
 // Reusing backgrounds? Is that even legal? Yup. I can even reuse canvases.
-// If I was feeling real wild, I would even reuse CartoonItems between canvases
+// If I was feeling real wild, I could even reuse CartoonItems between canvases
 // (Mind you, in reusing CartoonPathItems, I would have to reset their positions every scene change to prevent unwanted jumps.
 // Also, a stray number in a key frame for another scene could cause a little havok)
 
@@ -151,6 +180,18 @@ star.attr({
 });
 canvas2.addItem(star);
 
+// Hurrah! A CartoonImageItem! For this example, the image is already on the page (and is loaded)
+// which is probably better than loading it with javascript
+// I had a little difficulty when I was writing this, because I hadn't placed all this code
+// in a document.onready function, so... the dom (with the image) got loaded _after_ this code,
+// the value for img was null, and I got an error whenever the item was drawn. Ouch. After figuring
+// it out, I did a quick fix, by moving the img element in front of this script element.
+// For production purposes, though, I would suggest using document.onready to avoid all such problems
+var img = document.getElementById("logo"),
+    logo = new CartoonImageItem("logo", img);
+logo.y = 300;
+canvas2.addItem(logo);
+
 // We have to add this because otherwise it will begin moving even though it doesn't appear for 12 seconds
 scene2.addKeyFrame(star, 12200, "x", 100); // (Why 12200 instead of 12000? I didn't like it moving so soon after the scene change)
 scene2.addKeyFrame(star, 13000, "x", 700);
@@ -158,6 +199,14 @@ scene2.addKeyFrame(star, 12200, "scale", 1);
 scene2.addKeyFrame(star, 13000, "scale", 5);
 scene2.addKeyFrame(star, 12200, "fillStyle", "yellow");
 scene2.addKeyFrame(star, 13000, "fillStyle", "red");
+
+scene2.addKeyFrame(logo, 12200, "x", 800);
+scene2.addKeyFrame(logo, 13000, "x", 200);
+scene2.addKeyFrame(logo, 12200, "scale", 1);
+scene2.addKeyFrame(logo, 12600, "scale", 5); // It looks kinda bad at that size, so we'll make it go to normal size before stopping
+scene2.addKeyFrame(logo, 13000, "scale", 1);
+scene2.addKeyFrame(logo, 12200, "globalAlpha", 0); // 0 is invisible
+scene2.addKeyFrame(logo, 13000, "globalAlpha", 1); // 1 is entirely visible
 
 animation.addScene(scene1, 0); // The first scene always begins at 0 milliseconds so people don't get stuck staring at a blank canvas
 animation.addScene(scene2, 12000); // I think 12000 milliseconds is about where the first scene's action stops
