@@ -239,7 +239,7 @@
      *
      * @ctext CanvasRenderingContext2d on which to draw the object
      */
-    AbstractCartoonItem.draw = function (ctext) {
+    AbstractCartoonItem.prototype.draw = function (ctext) {
         console.log("Not implemented");
     };
 
@@ -825,7 +825,7 @@
     }
     GenericCartoonItem.prototype.constructor = GenericCartoonItem;
 
-    GenericCartoonItem.prototype.getGlobal = CartoonPathItem._getGlobal;
+    GenericCartoonItem.prototype.getGlobal = CartoonPathItem.prototype._getGlobal;
 
     /**
      * Prepares the CanvasRenderingContext2d by setting all of the values for drawing
@@ -867,19 +867,19 @@
     }
     CartoonImageItem.prototype.constructor = CartoonImageItem;
 
-    CartoonImageItem.prototype._getGlobal = CartoonPathItem._getGlobal;
+    CartoonImageItem.prototype._getGlobal = CartoonPathItem.prototype._getGlobal;
 
     /**
      * Draws the image onto a canvas
      *
      * @param CanvasRenderingContext2d to draw with
      */
-    CartoonImageItem.draw = function (ctext) {
+    CartoonImageItem.prototype.draw = function (ctext) {
         for (var name in this.attrs) {
             ctext[name] = this.attrs[name];
         }
         var origins = this._getGlobal(ctext);
-        ctext.drawImage(this.img, origins.originX, origins.originY);
+        ctext.drawImage(this.img, -origins.originX, -origins.originY);
     };
 
     window.CartoonImageItem = CartoonImageItem;
