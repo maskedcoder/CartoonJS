@@ -156,6 +156,8 @@ scene2.addKeyFrame(star, 12200, "x", 100); // (Why 12200 instead of 12000? I did
 scene2.addKeyFrame(star, 13000, "x", 700);
 scene2.addKeyFrame(star, 12200, "scale", 1);
 scene2.addKeyFrame(star, 13000, "scale", 5);
+scene2.addKeyFrame(star, 12200, "fillStyle", "yellow");
+scene2.addKeyFrame(star, 13000, "fillStyle", "red");
 
 animation.addScene(scene1, 0); // The first scene always begins at 0 milliseconds so people don't get stuck staring at a blank canvas
 animation.addScene(scene2, 12000); // I think 12000 milliseconds is about where the first scene's action stops

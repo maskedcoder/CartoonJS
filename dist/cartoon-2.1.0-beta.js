@@ -1247,8 +1247,11 @@
             case "path":
                 this.update = alterPath;
                 break;
-            case "stroke":
-            case "fill":
+            case "strokeStyle":
+            case "fillStyle":
+            case "shadowColor":
+                this.startState = parseColor(attr1);
+                this.endState = parseColor(attr2);
                 this.update = alterColor;
                 break;
             default:
@@ -1278,6 +1281,125 @@
     subAnimation.prototype.transformForTime = function (time) {
         var prct = (time - this.begin)/(this.end - this.begin);
         this.update(this.object, prct, this.type, this.startState, this.endState);
+    };
+
+    /**
+     * Parses a CSS color into red, green, and blue values
+     *
+     * @param color A CSS color of the format #rgb, #rrggbb, rgb(#,#,#), rgba(#,#,#,#), or a basic keyword
+     *
+     * @return object containing red, green, and blue values
+     */
+    var parseColor = function (color) {
+        var colors = {
+            red: 0,
+            green: 0,
+            blue: 0,
+            alpha: 1
+        }, mainpart, parts;
+        if (color[0] == "#") {
+            if (color.length == 4) {
+                colors.red = parseBase16Digit(color[1]) * 17;
+                colors.green = parseBase16Digit(color[2]) * 17;
+                colors.blue = parseBase16Digit(color[3]) * 17;
+            } else {
+                colors.red = parseBase16Digit(color[1]) * 16 + parseBase16Digit(color[2]);
+                colors.green = parseBase16Digit(color[3]) * 16 + parseBase16Digit(color[4]);
+                colors.blue = parseBase16Digit(color[5]) * 16 + parseBase16Digit(color[6]);
+            }
+        } else if (color.substr(0, 4) == "rgba") {
+            mainpart = color.substring(5, color.length - 1);
+            parts = mainpart.split(/ *, */);
+            colors.red = Number(parts[0]);
+            colors.green = Number(parts[1]);
+            colors.blue = Number(parts[2]);
+            colors.alpha = Number(parts[3]);
+        } else if (color.substr(0, 3) == "rgb") {
+            mainpart = color.substring(4, color.length - 1);
+            parts = mainpart.split(/ *, */);
+            colors.red = Number(parts[0]);
+            colors.green = Number(parts[1]);
+            colors.blue = Number(parts[2]);
+        } else {
+            switch (color) {
+                // Since 0 is the default, we can skip setting attributes quite often
+                case "black":
+                    break;
+                case "silver":
+                    colors.red = 192;
+                    colors.green = 192;
+                    colors.blue = 192;
+                    break;
+                case "gray":
+                case "grey":
+                    colors.red = 128;
+                    colors.green = 128;
+                    colors.blue = 128;
+                    break;
+                case "white":
+                    colors.red = 255;
+                    colors.green = 255;
+                    colors.blue = 255;
+                    break;
+                case "maroon":
+                    colors.red = 128;
+                    break;
+                case "red":
+                    colors.red = 255;
+                    break;
+                case "purple":
+                    colors.red = 128;
+                    colors.blue = 128;
+                    break;
+                case "fuchsia":
+                    colors.red = 255;
+                    colors.blue = 255;
+                    break;
+                case "green":
+                    colors.green = 128;
+                    break;
+                case "lime":
+                    colors.green = 255;
+                    break;
+                case "olive":
+                    colors.red = 128;
+                    colors.green = 128;
+                    break;
+                case "yellow":
+                    colors.red = 255;
+                    colors.green = 255;
+                    break;
+                case "navy":
+                    colors.blue = 128;
+                    break;
+                case "blue":
+                    colors.blue = 255;
+                    break;
+                case "teal":
+                    colors.green = 128;
+                    colors.blue = 128;
+                    break;
+                case "aqua":
+                    colors.green = 255;
+                    colors.blue = 255;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return colors;
+    };
+
+    /**
+     * Parses a digit that is in base 16 and returns the corresponding base 10 value
+     *
+     * @param num A string representing a digit of base 16
+     *
+     * @return A base 10 integer
+     */
+    var parseBase16Digit = function (num) {
+        num = num.toLowerCase();
+        return '0123456789abcdef'.indexOf(num);
     };
     
     /**
@@ -1338,6 +1460,13 @@
      * @param end The end color
      */
     var alterColor = function (object, prct, attr, startColor, endColor) {
+        var newColor = {
+            red: Math.floor(startColor.red + (endColor.red - startColor.red) * prct),
+            green: Math.floor(startColor.green + (endColor.green - startColor.green) * prct),
+            blue: Math.floor(startColor.blue + (endColor.blue - startColor.blue) * prct),
+            alpha: startColor.alpha + (endColor.alpha - startColor.alpha) * prct
+        };
+        object.attr(attr, "rgba(" + newColor.red + "," + newColor.green + "," + newColor.blue + "," + newColor.alpha + ")");
     };
 
     

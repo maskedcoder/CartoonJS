@@ -692,6 +692,8 @@ Draws the next frame in the sequence corresponding to this AnimationScene. First
 
 Adds a key frame wherein the given Cartoon Item has the attribute `attr` equal to the value `val` at the given time. If the value for `time` is after the end of the animation, it will be changed to the time of the final frame. If the value for the attribute of the Cartoon Item is not the current value, and no other key frames for that attribute on that Cartoon Item have been added yet, a key frame for the current state will be added for the start of the animation. For example, if during the setting up code an object has the value for `x` equal to `0` (which is default), and a key frame is added for any time greater than `0` with a value other than `0`, a new key frame will be automatically created for `x` at the time `0` with the value of `0`. This is to avoid the tedium of having to add key frames fo the initial settings for all the attributes that will be animated.
 
+The types of attributes that can be animated are paths, colors, and numbers. Gradients are not supported. Also, the color support is limited to hexidecimal formats, rgb(#,#,#), rgba(#,#,#,#), and basic keyword colors.
+
 - `item` : A Cartoon Item or the name of a Cartoon Item
 - `time` : The time for the key frame
 - `attr` : A Cartoon Item [attribute](#cartoonpathitem-properties) to be animated
