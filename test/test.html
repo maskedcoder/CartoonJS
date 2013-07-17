@@ -19,35 +19,39 @@
                     equal(typeof (window.cancelAnimationFrame), "function", "window.cancelAnimationFrame exists");
                 });
 
-                module("CartoonItem tests");
+                module("Cartoon Item tests");
 
                 test("Basic", function () {
                     var item = new CartoonPathItem("My Item"),
-                        otherItem = new CartoonPathItem("His Item");
-                    equal(item.name, "My Item", "CartoonItem is identified by name");
+                        otherItem = new CartoonPathItem("His Item"),
+                        anotherItem = new GenericCartoonItem("Another Item");
+                    equal(item.name, "My Item", "Cartoon Item is identified by name");
 
-                    equal(item.setParent(43), false, "CartoonItem cannot have a non-null non-CartoonItem as parent");
-                    equal(item.setParent(otherItem), true, "CartoonItem can have a CartoonItem as parent");
-                    equal(item.parent, otherItem, "The CartoonItem's parent appears in CartoonItem.parent");
+                    equal(item.setParent(43), false, "Cartoon Item cannot have a non-null non-Cartoon Item as parent");
+                    equal(item.setParent(otherItem), true, "Cartoon Item can have a Cartoon Item as parent");
+                    equal(otherItem.setParent(anotherItem), true, "Any type of Cartoon Item can be a Cartoon Item parent");
+                    equal(item.parent, otherItem, "The Cartoon Item's parent appears in Cartoon Item.parent");
                     item.setParent(null);
-                    equal(item.parent, null, "CartoonItem.setParent(null) removes the parent-child relationship");
+                    equal(item.parent, null, "Cartoon Item.setParent(null) removes the parent-child relationship");
 
-                    equal(item.attr("NotARealAttribute", "Anything"), false, "Reference to fake attribute in CartoonItem.attr() results in false");
+                    equal(item.attr("NotARealAttribute", "Anything"), false, "Reference to fake attribute in Cartoon Item.attr() results in false");
                     item.attr("lineWidth", 10);
-                    equal(item.attr("lineWidth"), 10, "CartoonItem.attr(name, value) successfully sets a new value for an attribute");
+                    equal(item.attr("lineWidth"), 10, "Cartoon Item.attr(name, value) successfully sets a new value for an attribute");
                     equal(item.attr({ "lineWidth": 2, "NotReal": 4, "miterLimit": 2 }), false, "Fake attribute won't work, even when among real attributes");
                     item.attr("y", 20);
-                    equal(item.y, 20, "Spatial attributes can be set with CartoonItem.attr()");
+                    equal(item.y, 20, "Spatial attributes can be set with Cartoon Item.attr()");
 
                     item.setParent(otherItem);
                     otherItem.x = 20;
                     item.moveTo(0, 0);
-                    equal(item._getGlobalPath()[0].x, 20, "Parent object's spatial attributes manipulate the global position of vertices");
+                    var x = item._getGlobalPath()[0].x
+                    equal(Number(String(x).substr(0, 8)), 20, "Parent object's spatial attributes manipulate the global position of vertices");
+                    // To fix the nasty 20.000000000004, that's why
                     item.setPath([]);
                     item.paths = [[]];
                     otherItem.x = 0;
                 });
-                test("CartoonItem with bones", function () {
+                test("CartoonPathItem with bones", function () {
                     var item = new CartoonPathItem("My Item"),
                         matrix = new Matrix("My Matrix"),
                         otherMatrix = new Matrix("Not My Matrix");
@@ -56,7 +60,7 @@
 
                     item.setBoneSegments(matrix, [1, 2, 3]);
                     deepEqual(item._bones["My Matrix"], [1, 2, 3], "Vertices can be put under a Matrix's control");
-                    equal(item.setBoneSegments(otherMatrix, [1, 2, 3]), false, "A foreign Matrix cannot have control over a CartoonItem's vertices");
+                    equal(item.setBoneSegments(otherMatrix, [1, 2, 3]), false, "A foreign Matrix cannot have control over a CartoonPathItem's vertices");
 
                     item.setBoneSegments(matrix, []);
 
@@ -65,7 +69,7 @@
                     deepEqual(item._bones["My Matrix"], [0], "Vertices automatically added to the current bone");
                     item.endBone();
                     item.lineTo(-10, 10);
-                    deepEqual(item._bones["My Matrix"], [0], "Vertices no longer automatically added after CartoonItem.endBone() called");
+                    deepEqual(item._bones["My Matrix"], [0], "Vertices no longer automatically added after CartoonPathItem.endBone() called");
 
                     matrix.x = 10;
                     equal(item._getGlobalPath()[0].x, 20, "Matrix manipulates the global position of vertices under its control");
@@ -107,6 +111,39 @@
                     otherItem.endPath();
                     equal(otherItem._currentPath, 1, "CartoonPathItem.endPath() ends creation of current path")
                     equal(otherItem._paths.length, 2, "CartoonPathItem.endPath() prepares for new creating new path");
+                });
+                test("GenericCartoonItem", function () {
+                    var item = new GenericCartoonItem("My Item"),
+                        canvas = new CartoonCanvas("qunit-fixture", 900, 600), data;
+                    canvas.addItem(item);
+                    item.x = 450; // Move the item to the middle
+                    item.y = 300;
+                    item.attr("fillStyle", "red");
+                    canvas.draw();
+                    pixelEqual(canvas.canvas, 450, 300, 0, 0, 0, 0, "GenericCartoonItems do nothing unless draw() is overwritten");
+                    item.draw = function (ctxt) {
+                        this.customizeContext(ctxt);
+                        this.getGlobal(ctxt);
+                        ctxt.fillRect(-10, -10, 20, 20);
+                    };
+                    canvas.draw();
+                    pixelEqual(canvas.canvas, 450, 300, 255, 0, 0, 255, "GenericCartoonItems will draw, when given a new draw() function");
+                });
+                test("CartoonImageItems", function () {
+                    var canvas = new CartoonCanvas("qunit-fixture", 900, 600),
+                        imgItem, img;
+                    stop();
+                    img = new Image();
+                    img.onload = function () {
+                        start();
+                        imgItem = new CartoonImageItem("Logo", img);
+                        imgItem.x = 50;
+                        imgItem.y = 50;
+                        canvas.addItem(imgItem);
+                        canvas.draw();
+                        notPixelEqual(canvas.canvas, 70, 70, 0, 0, 0, 0, "CartoonImageItem will draw");
+                    };
+                    img.src = "resources/logo.png";
                 });
 
                 module("Matrix tests");
