@@ -151,6 +151,8 @@ The CartoonPathItem stores a list of points in the format:
         type: [move, arc, curve, quadraticCurve, bezierCurve, line, control1, or control2]
     }
 
+If a vertex is the beginning of an arc segment, it will have the additional attribute `radius`.
+
 When the draw function is called, the CartoonPathItem will customize the canvas context's attributes and then run a series of commands to draw a shape.
 
 One Cartoon Item can be the parent of another, which means that the parent's location, rotation, or scale change, the child will change equally. For complex animating, a Matrix can be created and given permission to adjust the location, rotation, or scale of specific points in the Cartoon Item. CartoonPathItems, CartoonImageItems, and GenericCartoonItems can all be parents of one another.
@@ -164,6 +166,7 @@ One Cartoon Item can be the parent of another, which means that the parent's loc
 - `originX` : (default: `0`) The x component of the point that the CartoonPathItem will be rotated around
 - `originY` : (default: `0`) The y component of the point that the CartoonPathItem will be rotated around
 - `parent` : A reference to the parent CartoonPathItem, if any
+- `path` : A list of vertices that make up the path
 - `reverse` : Whether or not to draw the path with left and right swapped
 - `rotation` : (default: `0`) The rotation of the CartoonPathItem
 - `scale` : (default: `1`) The scale of the CartoonPathItem

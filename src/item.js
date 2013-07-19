@@ -102,7 +102,7 @@
      */
     var CartoonPathItem = function (name) {
         AbstractCartoonItem.call(this, name);
-        this._path = [];
+        this.path = [];
         this.attrs = {
             fillStyle: "#000",
             font: "Arial",
@@ -426,7 +426,7 @@
      * @return List of vertices
      */
     CartoonPathItem.prototype.getPath = function () {
-        return [].concat(this._path);
+        return [].concat(this.path);
     };
 
     /**
@@ -437,7 +437,7 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.setPath = function (path) {
-        this._path = path;
+        this.path = path;
         return this;
     };
 
@@ -454,9 +454,9 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.bezierCurveTo = function (x, y, cx1, cy1, cx2, cy2) {
-        this._path.push({ "type": "bezierCurve", "x": x, "y": y });
-        this._path.push({ "type": "control1", "x": cx1, "y": cy1 });
-        var nLength = this._path.push({ "type": "control2", "x": cx2, "y": cy2 });
+        this.path.push({ "type": "bezierCurve", "x": x, "y": y });
+        this.path.push({ "type": "control1", "x": cx1, "y": cy1 });
+        var nLength = this.path.push({ "type": "control2", "x": cx2, "y": cy2 });
         if (this._buildingBone) {
             this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 3, nLength - 2, nLength - 1]);
         }
@@ -475,8 +475,8 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.quadraticCurveTo = function (x, y, cpx, cpy) {
-        this._path.push({ "type": "quadraticCurve", "x": x, "y": y });
-        var nLength = this._path.push({ "type": "control1", "x": cpx, "y": cpy });
+        this.path.push({ "type": "quadraticCurve", "x": x, "y": y });
+        var nLength = this.path.push({ "type": "control1", "x": cpx, "y": cpy });
         if (this._buildingBone) {
             this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
@@ -496,8 +496,8 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.arcTo = function (x, y, x2, y2, radius) {
-        this._path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
-        var nLength = this._path.push({ "type": "control1", "x": x2, "y": y2 });
+        this.path.push({ "type": "arc", "x": x, "y": y, "radius": radius });
+        var nLength = this.path.push({ "type": "control1", "x": x2, "y": y2 });
         if (this._buildingBone) {
             this._bones[this._buildingBone] = this._bones[this._buildingBone].concat([nLength - 2, nLength - 1]);
         }
@@ -514,7 +514,7 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.lineTo = function (x, y) {
-        var nLength = this._path.push({ "type": "line", "x": x, "y": y });
+        var nLength = this.path.push({ "type": "line", "x": x, "y": y });
         if (this._buildingBone) {
             this._bones[this._buildingBone].push(nLength - 1);
         }
@@ -531,7 +531,7 @@
      * @return This CartoonPathItem
      */
     CartoonPathItem.prototype.moveTo = function (x, y) {
-        var nLength = this._path.push({ "type": "move", "x": x, "y": y });
+        var nLength = this.path.push({ "type": "move", "x": x, "y": y });
         if (this._buildingBone) {
             this._bones[this._buildingBone].push(nLength - 1);
         }
