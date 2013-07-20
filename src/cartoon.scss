@@ -22,6 +22,7 @@
     left: 0;
     right: 0;
     height: 70px;
+    background: rgba(0,0,0,0); /* Fixes bug with IE (A bug with IE? Seriously?) */
     #animation-controls {
         width: 720px;
         height: 50px;
