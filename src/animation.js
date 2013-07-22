@@ -755,20 +755,20 @@
         this.animation = animation;
         var element = $("animation-controls-container");
         var newEl = "<div id=\"animation-controls\" style=\"display: none; \">" +
-                "<div id=\"animation-time-holder\">" +
-                    "<span id=\"animation-time\">0:00</span></div>" +
-                "<div class=\"animation-control\" id=\"animation-toggle\"><span>&nbsp;</span></div>" +
-                "<div class=\"animation-control\" id=\"animation-stop\"><span>&nbsp;</span></div>" +
-                "<div class=\"animation-control\" id=\"animation-back15\"><span>&nbsp;</span></div>" +
-                "<div id=\"animation-meter\">" +
-                    "<span id=\"animation-marker\" style=\"left: -3px; \" >&nbsp;</span>" +
-            "</div></div>";
+                        "<div id=\"animation-time-holder\">" +
+                            "<span id=\"animation-time\">0:00</span></div>" +
+                        "<div class=\"animation-control\" id=\"animation-toggle\"><span>&nbsp;</span></div>" +
+                        "<div class=\"animation-control\" id=\"animation-stop\"><span>&nbsp;</span></div>" +
+                        "<div class=\"animation-control\" id=\"animation-back15\"><span>&nbsp;</span></div>" +
+                        "<div id=\"animation-meter\">" +
+                            "<span id=\"animation-marker\" style=\"left: -3px; \" >&nbsp;</span>" +
+                    "</div></div>";
         element.innerHTML += newEl;
-        element.onmouseover = function () {
+        element.parentElement.onmouseover = function () {
             showControls();
             timer = window.setTimeout(hideControls, 3000);
         };
-        element.onmousemove = function () {
+        element.parentElement.onmousemove = function () {
             showControls();
             if (timer) {
                 window.clearTimeout(timer);
