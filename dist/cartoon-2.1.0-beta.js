@@ -1,6 +1,6 @@
 /*!
  * Cartoon.js v2.1.0-beta 
- * Copyright (c) 2012-2013 Andrew Myers 
+ * Copyright (c) 2012-2014 Andrew Myers (The Masked Coder)
  * MIT License 
  */
 (function (window) {

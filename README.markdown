@@ -748,7 +748,7 @@ Updates the state of the play/pause button. If the Animation is playing, the but
 
 ## Copyright and License
 
-Copyright &copy; 2013 Andrew Myers
+Copyright &copy; 2013 Andrew Myers (The Masked Coder)
 
 Licensed under the MIT license
 

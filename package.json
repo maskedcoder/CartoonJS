@@ -2,7 +2,7 @@
   "name": "CartoonJS",
   "title": "CartoonJS",
   "version": "2.1.0-beta",
-  "author": "Andrew Myers",
+  "author": "Andrew Myers <maskedcoder@hush.com>",
   "description": "JavaScript library for creating HTML5 canvas animations",
   "license": "MIT",
   "keywords": [],

@@ -4,7 +4,7 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: "/*!\n * Cartoon.js v<%= pkg.version %> \n" +
-                        " * Copyright (c) 2012-2013 Andrew Myers \n" +
+                        " * Copyright (c) 2012-2014 Andrew Myers (The Masked Coder) \n" +
                         " * MIT License \n" +
                         " */\n"
             },
@@ -16,7 +16,7 @@ module.exports = function (grunt) {
         concat: {
             options: {
                 banner: "/*!\n * Cartoon.js v<%= pkg.version %> \n" +
-                        " * Copyright (c) 2012-2013 Andrew Myers \n" +
+                        " * Copyright (c) 2012-2014 Andrew Myers (The Masked Coder)\n" +
                         " * MIT License \n" +
                         " */\n"
             },
