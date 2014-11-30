@@ -6,7 +6,7 @@ CartoonJS is an HTML5-based animation framework for building canvas animations
 
 ## Example
 
-Here is an example .html file:
+Here is an example html file:
 
     <!DOCTYPE html>
     <html>
@@ -20,7 +20,7 @@ Here is an example .html file:
         </body>
     </html>
 
-The css file only necessary for the default interface.
+The css file is only necessary for the default interface.
 
 Here is an example of a simple animation:
 
@@ -748,7 +748,7 @@ Updates the state of the play/pause button. If the Animation is playing, the but
 
 ## Copyright and License
 
-Copyright &copy; 2013 Andrew Myers (The Masked Coder)
+Copyright &copy; 2014 Andrew Myers (The Masked Coder)
 
 Licensed under the MIT license
 
